@@ -151,6 +151,15 @@
       <button onclick="doWork()" id="btnWork" class="full" style="display:flex; justify-content:space-between; align-items:center; padding:15px;"><span>⚡ العمل العادي</span><span id="workTimer" style="font-size:11px;">جاهز</span></button>
       <button onclick="doExtraWork()" id="btnExtra" class="full purple" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-top:10px;"><span>🔥 نوبة إضافية (x3)</span><span id="extraTimer" style="font-size:11px;">جاهز</span></button>
     </div>
+
+    <!-- الوردية 12 ساعة -->
+    <div class="card" style="border-color:#fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);">
+      <h3>⏱️ الوردية اليومية (12 ساعة)</h3>
+      <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">اعمل بجد لمدة 12 ساعة متواصلة للحصول على مكافأة ضخمة (أرباح مضاعفة + نقاط خبرة).</p>
+      <div style="text-align:center; font-size:20px; font-weight:bold; color:#38bdf8; margin-bottom:10px;" id="shiftTimer">جاهز للعمل</div>
+      <button onclick="startShift()" id="btnShift" class="full gold" style="padding:15px; font-size:16px;">ابدأ الوردية (+ مكافأة ضخمة)</button>
+    </div>
+
     <div class="card">
       <h3 style="justify-content:center; font-size:16px;">💎 تفصيل صافي الثروة</h3>
       <div style="text-align:center; margin-bottom:15px;"><div style="font-size:24px; font-weight:bold; color:#fbbf24;" id="wealthTotal">$0</div></div>
@@ -172,12 +181,14 @@
 
   <div class="tab-content" id="tab-jobs"><div class="card"><h3>💼 الوظائف</h3><div id="jobsList"></div></div></div>
 
+  <!-- تعديل الاستثمار الشامل -->
   <div class="tab-content" id="tab-invest">
     <div class="card">
-      <h3>📊 البورصة والذهب</h3>
+      <h3>📊 سوق الأسهم المباشر</h3>
       <div class="update-bar"><span>تحديث الأسعار خلال:</span> <strong id="marketTimer">30s</strong></div>
       <canvas id="stockChart" style="max-height: 200px; margin-bottom: 15px;"></canvas>
       <div id="stocksList" style="margin-top:15px;"></div>
+      
       <div style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
         <h3 style="color:#fbbf24;">🪙 تجارة الذهب</h3>
         <div class="project-card" style="border-color:#fbbf24;">
@@ -196,7 +207,15 @@
     <div class="card"><h3>💸 فشخرة</h3><button class="gold full" onclick="dropCash()">وزع 10,000$ على 5 لاعبين</button></div>
   </div>
 
-  <div class="tab-content" id="tab-business"><div class="card"><h3>🏭 المشاريع</h3><div id="businessList"></div></div></div>
+  <!-- تعديل المشاريع الشامل -->
+  <div class="tab-content" id="tab-business">
+    <div class="card">
+      <h3>🏭 إمبراطورية الأعمال</h3>
+      <p style="font-size:11px;color:#94a3b8;margin-bottom:15px;">قم بتطوير مشاريعك، توظيف عمالة، وتعديل سعر البيع لزيادة الأرباح.</p>
+      <div id="businessList"></div>
+    </div>
+  </div>
+  
   <div class="tab-content" id="tab-realestate"><div class="card"><h3>🏠 العقارات</h3><div id="realestateList"></div></div></div>
   <div class="tab-content" id="tab-cars"><div class="card"><h3>🚗 السيارات</h3><div id="newCarsList"></div></div></div>
   <div class="tab-content" id="tab-farm"><div class="card"><h3>🌾 المزرعة</h3><div id="farmList"></div></div></div>
@@ -312,9 +331,26 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 
+// --- DATA ---
 const JOBS = [ {id:1, name:'عامل نظافة', pay:15, xp:10, reqXp: 150}, {id:2, name:'موظف كاشير', pay:40, xp:20, reqXp: 1300}, {id:3, name:'سائق توصيل', pay:100, xp:40, reqXp: 3500}, {id:4, name:'بائع', pay:250, xp:80, reqXp: 10000}, {id:5, name:'مبرمج', pay:600, xp:150, reqXp: 25000}, {id:6, name:'مهندس', pay:1500, xp:300, reqXp: 60000}, {id:7, name:'طبيب', pay:4000, xp:600, reqXp: 150000}, {id:8, name:'محامي', pay:10000, xp:1000, reqXp: 300000}, {id:9, name:'مدير شركة', pay:25000, xp:2000, reqXp: 600000}, {id:10, name:'مستثمر', pay:50000, xp:5000, reqXp: 1000000}, {id:11, name:'رئيس جمهورية', pay:100000, xp:10000, reqXp: 2500000}, {id:12, name:'وزير', pay:200000, xp:20000, reqXp: 5000000}, {id:13, name:'لواء', pay:500000, xp:50000, reqXp: 10000000}, {id:14, name:'ملياردير', pay:1000000, xp:100000, reqXp: 25000000}, {id:15, name:'إمبراطور', pay:5000000, xp:500000, reqXp: 100000000} ];
 const STOCKS = [ { sym:'COMI', name:'CIB', price: 75.5, history: [] }, { sym:'HRHO', name:'هيرميس', price: 18.2, history: [] }, { sym:'TMGH', name:'طلعت', price: 45.0, history: [] }, { sym:'OLFI', name:'عبورلاند', price: 6.2, history: [] }, { sym:'ETEL', name:'اتصالات', price: 12.5, history: [] }, { sym:'SWDY', name:'السويدي', price: 35.8, history: [] }, { sym:'ABUK', name:'أبو قير', price: 22.1, history: [] }, { sym:'ORAS', name:'أوراسكوم', price: 120.0, history: [] }, { sym:'JUFO', name:'جهينة', price: 8.5, history: [] }, { sym:'EAST', name:'الشرقية', price: 55.0, history: [] }, { sym:'PHDC', name:'بالم هيلز', price: 4.2, history: [] }, { sym:'MNHD', name:'مدينة نصر', price: 3.8, history: [] }, { sym:'SKPC', name:'سيدي كرير', price: 15.0, history: [] }, { sym:'ESRS', name:'حديد عز', price: 28.0, history: [] }, { sym:'AMOC', name:'زيوت', price: 10.5, history: [] } ];
-const PROJECTS = [ { id: 'p1', name: 'عربة فول', cost: 1000, income: 2 }, { id: 'p2', name: 'كشك حلوى', cost: 3000, income: 6 }, { id: 'p3', name: 'قهوة', cost: 5000, income: 12 }, { id: 'p4', name: 'مطعم', cost: 15000, income: 40 }, { id: 'p5', name: 'ملابس', cost: 30000, income: 80 }, { id: 'p6', name: 'ورشة', cost: 50000, income: 150 }, { id: 'p7', name: 'مخبز', cost: 100000, income: 300 }, { id: 'p8', name: 'دواجن', cost: 200000, income: 600 }, { id: 'p9', name: 'بنزين', cost: 400000, income: 1200 }, { id: 'p10', name: 'سوبر', cost: 800000, income: 2500 }, { id: 'p11', name: 'نقل', cost: 1500000, income: 5000 }, { id: 'p12', name: 'أثاث', cost: 3000000, income: 10000 }, { id: 'p13', name: 'برمجة', cost: 5000000, income: 18000 }, { id: 'p14', name: 'مستشفى', cost: 10000000, income: 40000 }, { id: 'p15', name: 'طيران', cost: 20000000, income: 100000 } ];
+const PROJECTS = [
+  { id: 'p1', name: 'كشك حلوى ومشروبات', baseCost: 5000, baseIncome: 15, workerCost: 50 },
+  { id: 'p2', name: 'عربة فول وفلافل', baseCost: 15000, baseIncome: 40, workerCost: 120 },
+  { id: 'p3', name: 'مطعم وجبات سريعة', baseCost: 50000, baseIncome: 150, workerCost: 300 },
+  { id: 'p4', name: 'محل ملابس رياضية', baseCost: 120000, baseIncome: 400, workerCost: 800 },
+  { id: 'p5', name: 'ورشة صيانة سيارات', baseCost: 300000, baseIncome: 1000, workerCost: 2000 },
+  { id: 'p6', name: 'سوبر ماركت مركزي', baseCost: 800000, baseIncome: 2500, workerCost: 5000 },
+  { id: 'p7', name: 'مصنع أثاث فاخر', baseCost: 2000000, baseIncome: 6000, workerCost: 12000 },
+  { id: 'p8', name: 'شركة نقل وشحن', baseCost: 5000000, baseIncome: 15000, workerCost: 30000 },
+  { id: 'p9', name: 'مصنع ملابس جاهزة', baseCost: 12000000, baseIncome: 40000, workerCost: 80000 },
+  { id: 'p10', name: 'مستشفى خاص', baseCost: 30000000, baseIncome: 100000, workerCost: 200000 },
+  { id: 'p11', name: 'شركة برمجة وتطبيقات', baseCost: 80000000, baseIncome: 250000, workerCost: 500000 },
+  { id: 'p12', name: 'مجمع تجاري (مول)', baseCost: 200000000, baseIncome: 600000, workerCost: 1200000 },
+  { id: 'p13', name: 'مصنع سيارات', baseCost: 500000000, baseIncome: 1500000, workerCost: 3000000 },
+  { id: 'p14', name: 'شركة طيران', baseCost: 1500000000, baseIncome: 5000000, workerCost: 10000000 },
+  { id: 'p15', name: 'شركة نفط وطاقة', baseCost: 5000000000, baseIncome: 15000000, workerCost: 30000000 }
+];
 const REAL_ESTATE = [ { id: 'r1', name: 'شقة', cost: 3000, income: 10 }, { id: 'r2', name: 'محل', cost: 15000, income: 60 }, { id: 'r3', name: 'فيلا', cost: 50000, income: 250 }, { id: 'r4', name: 'عمارة', cost: 200000, income: 1200 }, { id: 'r5', name: 'برج', cost: 1000000, income: 7000 }, { id: 'r6', name: 'مول', cost: 5000000, income: 40000 }, { id: 'r7', name: 'فندق', cost: 20000000, income: 180000 }, { id: 'r8', name: 'ملاهي', cost: 50000000, income: 500000 }, { id: 'r9', name: 'ملعب', cost: 100000000, income: 1100000 }, { id: 'r10', name: 'إمارة', cost: 500000000, income: 6000000 }, { id: 'r11', name: 'جزيرة', cost: 1000000000, income: 15000000 }, { id: 'r12', name: 'برج خليفة', cost: 5000000000, income: 80000000 }, { id: 'r13', name: 'فضاء', cost: 10000000000, income: 200000000 }, { id: 'r14', name: 'مدينة ذكية', cost: 50000000000, income: 1000000000 }, { id: 'r15', name: 'كوكب', cost: 100000000000, income: 5000000000 } ];
 const NEW_CARS = [ { id: 'c1', name: 'فيات', cost: 5000, rent: 5 }, { id: 'c2', name: 'لادا', cost: 10000, rent: 10 }, { id: 'c3', name: 'هيونداي', cost: 50000, rent: 60 }, { id: 'c4', name: 'تويوتا', cost: 100000, rent: 150 }, { id: 'c5', name: 'مرسيدس', cost: 300000, rent: 500 }, { id: 'c6', name: 'BMW', cost: 600000, rent: 1000 }, { id: 'c7', name: 'بورش', cost: 2000000, rent: 4000 }, { id: 'c8', name: 'فيراري', cost: 5000000, rent: 10000 }, { id: 'c9', name: 'لامبو', cost: 8000000, rent: 18000 }, { id: 'c10', name: 'بوغاتي', cost: 20000000, rent: 50000 }, { id: 'c11', name: 'ماكلارين', cost: 30000000, rent: 80000 }, { id: 'c12', name: 'رولز', cost: 50000000, rent: 120000 }, { id: 'c13', name: 'طائرة', cost: 200000000, rent: 500000 }, { id: 'c14', name: 'يخت', cost: 500000000, rent: 1500000 }, { id: 'c15', name: 'غواصة', cost: 1000000000, rent: 4000000 } ];
 const CROPS = [ { id: 'wheat', name: 'قمح', cost: 100, time: 60, sell: 150 }, { id: 'tomato', name: 'طماطم', cost: 300, time: 120, sell: 500 }, { id: 'cotton', name: 'قطن', cost: 800, time: 300, sell: 1500 }, { id: 'mango', name: 'مانجو', cost: 2000, time: 600, sell: 4000 }, { id: 'cactus', name: 'صبار', cost: 10000, time: 1800, sell: 25000 }, { id: 'saffron', name: 'زعفران', cost: 50000, time: 3600, sell: 140000 }, { id: 'truffle', name: 'كمأة', cost: 200000, time: 7200, sell: 600000 }, { id: 'orchid', name: 'أوركيد', cost: 1000000, time: 10800, sell: 3500000 }, { id: 'cocoa', name: 'كاكاو', cost: 5000000, time: 14400, sell: 20000000 }, { id: 'apple', name: 'تفاحة ذهبية', cost: 20000000, time: 18000, sell: 90000000 }, { id: 'moon', name: 'غبار القمر', cost: 100000000, time: 21600, sell: 500000000 }, { id: 'dragon', name: 'تنين', cost: 500000000, time: 28800, sell: 3000000000 }, { id: 'star', name: 'بذور النجوم', cost: 1000000000, time: 36000, sell: 8000000000 }, { id: 'alien', name: 'نبات فضائي', cost: 5000000000, time: 43200, sell: 50000000000 }, { id: 'eternity', name: 'زهرة الخلود', cost: 10000000000, time: 86400, sell: 200000000000 } ];
@@ -342,7 +378,8 @@ window.doRegister = async () => {
       username: un, email: em, cash: 0, bank: 0, dirtyCash: 0, xp: 0, currentJobId: 1,
       stocks: {}, properties: {}, projects: {}, gold: 0, cars: [], farm: [], 
       missions: {}, blackMarket: { reputation: 100, heat: 0, tradesToday: 0, ownedGear: [] },
-      export: { totalProfit: 0, completed: 0, shipments: [] }, corporations: [], gang: null, unlockedCodes: [], tuning: 1
+      export: { totalProfit: 0, completed: 0, shipments: [] }, corporations: [], gang: null, unlockedCodes: [], tuning: 1,
+      lastShift: 0
     });
   } catch(e) { showAuthMsg("خطأ: " + (e.code === 'auth/email-already-in-use' ? "الإيميل مستخدم" : e.message)); }
 };
@@ -386,7 +423,7 @@ function updateUI() {
   let goldVal = (uData.gold || 0) * currentGoldPrice;
   let propsVal = 0; for(let p in uData.properties) { propsVal += uData.properties[p] * (REAL_ESTATE.find(x=>x.id===p)?.cost || 0); }
   let carsVal = 0; uData.cars.forEach(c => { carsVal += NEW_CARS.find(x=>x.id===c)?.cost || 0; });
-  let projVal = 0; for(let p in uData.projects) { projVal += (uData.projects[p].level || 0) * (PROJECTS.find(x=>x.id===p)?.cost || 0); }
+  let projVal = 0; for(let p in uData.projects) { projVal += (uData.projects[p].level || 0) * (PROJECTS.find(x=>x.id===p)?.baseCost || 0); }
   
   let net = uData.cash + uData.bank + stocksVal + goldVal + propsVal + carsVal + projVal;
   document.getElementById('netWorth').innerText = `$${Math.floor(net).toLocaleString('en-US')}`;
@@ -403,6 +440,7 @@ function updateUI() {
   document.getElementById('launderTax').innerText = hasZeroTrace ? '15%' : '22%';
 
   renderJobs(); renderStocks(); renderBusiness(); renderRealEstate(); renderCars(); renderFarm(); renderGold(); renderChart(); renderExport(); renderMissions(); renderBlackMarket(); renderGames();
+  updateShiftTimer();
 }
 
 function listenChat() { if(chatUnsub) chatUnsub(); const q = query(collection(db, "chat"), orderBy("time", "desc"), limit(50)); chatUnsub = onSnapshot(q, (snap) => { const chatBox = document.getElementById('chatBox'); if(!chatBox) return; chatBox.innerHTML = ''; snap.forEach(doc => { const c = doc.data(); chatBox.innerHTML += `<div style="margin-bottom:5px;"><strong style="color:#38bdf8;">${c.user}:</strong> <span style="color:#cbd5e1;">${c.text}</span></div>`; }); chatBox.scrollTop = chatBox.scrollHeight; }); }
@@ -412,6 +450,31 @@ window.dropCash = async () => { if(uData.cash < 10000) return showToast("تحت�
 window.doWork = async () => { if(!uData || workCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; workCd = true; const btn = document.getElementById('btnWork'); const timerEl = document.getElementById('workTimer'); btn.disabled = true; let timeLeft = 3; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; workCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay), xp: increment(job.xp), "missions.work": increment(1) }); showToast(`نجاح!`); };
 window.doExtraWork = async () => { if(!uData || extraCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; extraCd = true; const btn = document.getElementById('btnExtra'); const timerEl = document.getElementById('extraTimer'); btn.disabled = true; let timeLeft = 20; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; extraCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay * 3), xp: increment(job.xp * 2), "missions.work": increment(1) }); showToast(`🔥 نوبة ناجحة!`); };
 
+// Shift Logic
+window.startShift = async () => {
+  const now = Date.now(); const lastShift = uData.lastShift || 0; const cooldown = 12 * 60 * 60 * 1000;
+  if (now - lastShift < cooldown) return showToast("الوردية مش جاهزة لسه، استنى!");
+  const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0];
+  const reward = job.pay * 50; const xpReward = job.xp * 20;
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(reward), xp: increment(xpReward), lastShift: now });
+  showToast(`🎉 مبروك! كسبت $${reward} من الوردية!`);
+};
+
+function updateShiftTimer() {
+  const btn = document.getElementById('btnShift'); const text = document.getElementById('shiftTimer');
+  if(!btn || !uData) return;
+  const now = Date.now(); const lastShift = uData.lastShift || 0; const cooldown = 12 * 60 * 60 * 1000; const remaining = cooldown - (now - lastShift);
+  if (remaining <= 0) {
+    btn.disabled = false; btn.classList.add('gold'); btn.classList.remove('purple');
+    text.innerText = "جاهز للعمل"; text.style.color = "#10b981";
+  } else {
+    btn.disabled = true; btn.classList.remove('gold'); btn.classList.add('purple');
+    const h = Math.floor(remaining / 3600000); const m = Math.floor((remaining % 3600000) / 60000);
+    text.innerText = `متبقي: ${h}س ${m}د`; text.style.color = "#ef4444";
+  }
+}
+setInterval(updateShiftTimer, 1000);
+
 window.depositBank = async () => { const amount = parseInt(document.getElementById('bankAmount').value); if(!amount || amount <= 0) return showToast("أدخل مبلغ"); if(uData.cash < amount) return showToast("الكاش لا يكفي"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-amount), bank: increment(amount) }); showToast(`تم إيداع`); document.getElementById('bankAmount').value = ''; };
 window.withdrawBank = async () => { const amount = parseInt(document.getElementById('bankAmount').value); if(!amount || amount <= 0) return showToast("أدخل مبلغ"); if(uData.bank < amount) return showToast("البنك لا يكفي"); await updateDoc(doc(db, "users", user.uid), { cash: increment(amount), bank: increment(-amount) }); showToast(`تم سحب`); document.getElementById('bankAmount').value = ''; };
 window.transferMoney = async () => { const targetUser = document.getElementById('transferUser').value.trim(); const amount = parseInt(document.getElementById('transferAmount').value); if(!targetUser || !amount || amount <= 0) return showToast("أدخل البيانات"); if(uData.cash < amount) return showToast("رصيدك لا يكفي"); const q = query(collection(db, "users"), where("username", "==", targetUser)); const snap = await getDocs(q); if(snap.empty) return showToast("المستخدم غير موجود!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-amount) }); await updateDoc(doc(db, "users", snap.docs[0].id), { cash: increment(amount) }); showToast(`تم التحويل!`); };
@@ -420,9 +483,95 @@ function renderJobs() { const list = document.getElementById('jobsList'); if(!li
 window.changeJob = async (id) => { await updateDoc(doc(db, "users", user.uid), { currentJobId: id }); showToast("تم التغيير!"); };
 
 function renderChart() { if(!chartInstance) { const ctx = document.getElementById('stockChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'line', data: { labels: currentMarketStocks[0].history.map((_, i) => i), datasets: currentMarketStocks.map((s, i) => ({ label: s.name, data: s.history, borderColor: ['#38bdf8', '#fbbf24', '#10b981', '#a78bfa', '#ef4444', '#fb923c', '#2dd4bf', '#f472b6', '#94a3b8', '#818cf8', '#34d399', '#f87171', '#facc15', '#a3e635', '#e879f9'][i], tension: 0.4, borderWidth: 2, pointRadius: 0 })) }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } } } } }); } else { chartInstance.data.datasets.forEach((ds, i) => { ds.data = currentMarketStocks[i].history; }); chartInstance.update(); } }
-function renderStocks() { const list = document.getElementById('stocksList'); if(!list) return; list.innerHTML = ''; currentMarketStocks.forEach(s => { const owned = uData.stocks?.[s.sym] || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${s.name}</span><span class="stat-value gold">$${s.price.toFixed(2)}</span></div><div class="project-stats">تملك: ${owned}</div><div class="keypad"><button onclick="adjustInput('buy_${s.sym}', -1)" class="red">-</button><input type="number" id="buy_${s.sym}" value="1" readonly><button onclick="adjustInput('buy_${s.sym}', 1)" class="green">+</button></div><div class="row"><button class="green" onclick="buyStock('${s.sym}', ${s.price})">شراء</button><button class="red" onclick="sellStock('${s.sym}', ${s.price})">بيع</button></div></div>`; }); }
-window.buyStock = async (sym, price) => { const qty = parseInt(document.getElementById(`buy_${sym}`).value); const cost = price * qty; if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); let owned = (uData.stocks && uData.stocks[sym]) || 0; await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`stocks.${sym}`]: owned + qty, "missions.stocks": increment(qty) }); showToast(`تم شراء`); };
-window.sellStock = async (sym, price) => { const qty = parseInt(document.getElementById(`buy_${sym}`).value); let owned = (uData.stocks && uData.stocks[sym]) || 0; if(owned < qty) return showToast("لا تملك!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(price * qty), [`stocks.${sym}`]: owned - qty }); showToast(`تم بيع`); };
+
+function renderStocks() { 
+  const list = document.getElementById('stocksList'); if(!list) return; list.innerHTML = ''; 
+  currentMarketStocks.forEach(s => { 
+    const owned = uData.stocks?.[s.sym] || 0; 
+    const avgBuy = uData.stocks?.[s.sym + '_avg'] || 0;
+    const currentValue = owned * s.price;
+    const invested = owned * avgBuy;
+    const profit = currentValue - invested;
+    const profitPercent = invested > 0 ? (profit / invested) * 100 : 0;
+    const commission = currentValue * 0.01;
+    const netCash = currentValue - commission;
+    const profitColor = profit >= 0 ? '#10b981' : '#ef4444';
+    const profitSign = profit >= 0 ? '+' : '';
+    const sparkline = `<svg height="30" width="100" style="display:block; margin:0 auto;"><polyline points="0,15 ${Math.random()*20},${Math.random()*30} ${Math.random()*40},${Math.random()*30} 100,10" fill="none" stroke="${profitColor}" stroke-width="2"/></svg>`;
+
+    list.innerHTML += `
+      <div class="project-card" style="padding:0; overflow:hidden; margin-bottom:20px;">
+        <div style="padding:15px; border-bottom:1px solid #1e293b;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+             <div><h4 style="color:#38bdf8; font-size:16px;">${s.name}</h4><span style="color:#64748b; font-size:11px;">${s.sym}</span></div>
+             <div style="text-align:left;">
+               <div style="color:#10b981; font-weight:bold; font-size:18px;">EGP ${s.price.toFixed(2)}</div>
+               <div style="color:${s.price > (s.history[s.history.length-2]||s.price) ? '#10b981' : '#ef4444'}; font-size:11px;">${((s.price/(s.history[s.history.length-2]||s.price)-1)*100).toFixed(2)}%</div>
+             </div>
+          </div>
+          <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:10px;">${sparkline}</div>
+        </div>
+        
+        <div style="padding:15px; font-size:12px; line-height:2;">
+          <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>الأسهم المملوكة:</span> <strong style="color:#fff;">${owned} سهم</strong></div>
+          <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>متوسط سعر الشراء:</span> <strong style="color:#fff;">EGP ${avgBuy.toFixed(2)}</strong></div>
+          <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>رأس المال المستثمر:</span> <strong style="color:#fff;">EGP ${invested.toFixed(0)}</strong></div>
+          <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>القيمة السوقية الحالية:</span> <strong style="color:#fbbf24;">EGP ${currentValue.toFixed(0)}</strong></div>
+          <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>صافي الربح الفعلي:</span> <strong style="color:${profitColor};">${profitSign}${profit.toFixed(0)} EGP (${profitPercent.toFixed(1)}%)</strong></div>
+          <div style="display:flex; justify-content:space-between; color:#94a3b8; font-size:10px; margin-top:5px;"><span>عمولة السمسرة (1%):</span> <span style="color:#ef4444;">- EGP ${commission.toFixed(0)}</span></div>
+        </div>
+
+        <div style="padding:0 15px 15px;">
+          <div class="row" style="margin-bottom:10px;">
+            <button class="purple" onclick="setStockQty('${s.sym}', 0.25)">25%</button>
+            <button class="purple" onclick="setStockQty('${s.sym}', 0.5)">50%</button>
+            <button class="purple" onclick="setStockQty('${s.sym}', 1)">100%</button>
+          </div>
+          <div class="row">
+            <input type="number" id="buy_${s.sym}" placeholder="الكمية" value="1" style="margin:0;">
+            <button class="green" onclick="buyStock('${s.sym}', ${s.price})">شراء الأسهم</button>
+            <button class="red" onclick="sellStock('${s.sym}', ${s.price})">بيع</button>
+          </div>
+          <button class="gold full" style="margin-top:5px; font-size:11px;" onclick="sellAllStock('${s.sym}', ${s.price})">بيع كل الأسهم</button>
+        </div>
+      </div>
+    `; 
+  }); 
+}
+
+window.setStockQty = (sym, ratio) => {
+  const owned = uData.stocks?.[sym] || 0;
+  if(owned === 0) return;
+  document.getElementById(`buy_${sym}`).value = Math.floor(owned * ratio);
+};
+
+window.buyStock = async (sym, price) => { 
+  const qty = parseInt(document.getElementById(`buy_${sym}`).value); 
+  const cost = price * qty; 
+  if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); 
+  let owned = (uData.stocks && uData.stocks[sym]) || 0; 
+  let avgBuy = (uData.stocks && uData.stocks[`${sym}_avg`]) || price;
+  let newAvg = ((owned * avgBuy) + cost) / (owned + qty);
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`stocks.${sym}`]: owned + qty, [`stocks.${sym}_avg`]: newAvg, "missions.stocks": increment(qty) }); 
+  showToast(`تم شراء ${qty} سهم`); 
+};
+
+window.sellStock = async (sym, price) => { 
+  const qty = parseInt(document.getElementById(`buy_${sym}`).value); 
+  let owned = (uData.stocks && uData.stocks[sym]) || 0; 
+  if(owned < qty) return showToast("لا تملك هذه الكمية!"); 
+  const gross = price * qty; const commission = gross * 0.01; const net = gross - commission;
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(net), [`stocks.${sym}`]: owned - qty }); 
+  showToast(`تم بيع ${qty} سهم (بعد خصم 1%)`); 
+};
+
+window.sellAllStock = async (sym, price) => {
+  let owned = (uData.stocks && uData.stocks[sym]) || 0; 
+  if(owned <= 0) return showToast("لا تملك أسهم!");
+  const gross = price * owned; const commission = gross * 0.01; const net = gross - commission;
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(net), [`stocks.${sym}`]: 0, [`stocks.${sym}_avg`]: 0 }); 
+  showToast(`تم بيع كل الأسهم (بعد خصم 1%)`); 
+};
 
 setInterval(() => { marketTimer--; const timerEl = document.getElementById('marketTimer'); if(timerEl) timerEl.innerText = `${marketTimer}s`; if(marketTimer <= 0) { marketTimer = 30; currentMarketStocks = currentMarketStocks.map(s => { const change = (Math.random() - 0.5) * 0.15; const newPrice = Math.max(1, s.price * (1 + change)); s.history.push(newPrice); if(s.history.length > 20) s.history.shift(); return { ...s, price: newPrice }; }); currentGoldPrice = Math.max(10, currentGoldPrice * (1 + ((Math.random() - 0.5) * 0.1))); if(uData) { renderStocks(); renderChart(); renderGold(); } } }, 1000);
 
@@ -430,8 +579,92 @@ function renderGold() { document.getElementById('goldPrice').innerText = `$${cur
 window.buyGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); const cost = currentGoldPrice * qty; if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), gold: increment(qty) }); showToast(`تم الشراء`); };
 window.sellGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); if((uData.gold || 0) < qty) return showToast("لا تملك!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(currentGoldPrice * qty), gold: increment(-qty) }); showToast(`تم البيع`); };
 
-function renderBusiness() { const list = document.getElementById('businessList'); if(!list) return; list.innerHTML = ''; PROJECTS.forEach(p => { const owned = uData.projects?.[p.id]?.level || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${p.name}</span><span class="stat-value green">+$${p.income}/s</span></div><div class="project-stats">التكلفة: $${p.cost.toLocaleString('en-US')} | Lvl: ${owned}</div><button class="full green" onclick="buyProject('${p.id}', ${p.cost})">شراء/ترقية</button></div>`; }); }
-window.buyProject = async (id, cost) => { const currentLevel = uData.projects?.[id]?.level || 0; const actualCost = cost + (currentLevel * cost * 0.5); if(uData.cash < actualCost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-actualCost), [`projects.${id}.level`]: increment(1) }); showToast("تم الشراء!"); };
+function renderBusiness() { 
+  const list = document.getElementById('businessList'); if(!list) return; list.innerHTML = ''; 
+  
+  PROJECTS.forEach(p => { 
+    const data = uData.projects?.[p.id] || { level: 0, workers: 0, price: 32 };
+    const level = data.level;
+    
+    if(level === 0) {
+      list.innerHTML += `
+        <div class="project-card">
+          <div class="project-header"><span class="project-title">${p.name}</span></div>
+          <div class="project-stats">تكلفة الافتتاح: $${p.baseCost.toLocaleString('en-US')}</div>
+          <button class="full green" onclick="buyProject('${p.id}', ${p.baseCost})">افتتاح المشروع</button>
+        </div>
+      `;
+      return;
+    }
+
+    const upgradeCost = p.baseCost * Math.pow(2, level); 
+    const workerHireCost = p.workerCost * (data.workers + 1); 
+    const maxDemand = (level * 20) + (data.workers * 5);
+    const profitPerUnit = Math.max(1, data.price - (p.baseCost * 0.001)); 
+    const currentReturn = maxDemand * profitPerUnit;
+
+    list.innerHTML += `
+      <div class="project-card" style="border-left: 4px solid #fbbf24; margin-bottom:20px;">
+        <div class="project-header">
+          <span class="project-title">${p.name} (المستوى ${level})</span>
+          <span class="badge" style="background:#38bdf8; color:#000;">${level === 0 ? 'جديد' : 'نشط'}</span>
+        </div>
+        
+        <div style="background:#0b1120; padding:10px; border-radius:8px; font-size:11px; margin-bottom:10px; line-height:1.8;">
+          <div style="display:flex; justify-content:space-between;"><span>العمالة الحالية:</span> <strong style="color:#fff;">${data.workers} عامل</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>الطلب المتوقع:</span> <strong style="color:#38bdf8;">${maxDemand} وحدة/دورة</strong></div>
+          <div style="display:flex; justify-content:space-between;"><span>هامش ربح الوحدة:</span> <strong style="color:#10b981;">$${profitPerUnit.toFixed(2)}</strong></div>
+          <div style="display:flex; justify-content:space-between; border-top:1px solid #1e293b; margin-top:5px; padding-top:5px;"><span>صافي العائد المتوقع:</span> <strong style="color:#fbbf24;">$${currentReturn.toFixed(0)}</strong></div>
+        </div>
+
+        <div style="margin-bottom:10px;">
+          <label style="font-size:11px; color:#94a3b8;">سعر بيع المنتج (الوحدة):</label>
+          <div class="row" style="margin-top:5px; align-items:center;">
+            <button class="red" onclick="updatePrice('${p.id}', -1)" style="padding:5px; flex:0.2;">-</button>
+            <input type="number" id="price_${p.id}" value="${data.price}" onchange="updatePriceInput('${p.id}', this.value)" style="margin:0; flex:1; padding:5px; text-align:center;">
+            <button class="green" onclick="updatePrice('${p.id}', 1)" style="padding:5px; flex:0.2;">+</button>
+          </div>
+        </div>
+
+        <div class="row">
+          <button class="purple" onclick="hireWorker('${p.id}', ${workerHireCost})">توظيف ($${workerHireCost.toLocaleString()})</button>
+          <button class="gold" onclick="buyProject('${p.id}', ${upgradeCost}, true)">ترقية ($${upgradeCost.toLocaleString()})</button>
+        </div>
+      </div>
+    `; 
+  }); 
+}
+
+window.buyProject = async (id, cost, isUpgrade = false) => { 
+  if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); 
+  if(isUpgrade) {
+    await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}.level`]: increment(1) }); 
+    showToast("تم ترقية المشروع!");
+  } else {
+    await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}`]: { level: 1, workers: 0, price: 32 } }); 
+    showToast("تم افتتاح المشروع بنجاح!");
+  }
+};
+
+window.hireWorker = async (id, cost) => {
+  if(uData.cash < cost) return showToast("فلوسك مش كفاية!");
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}.workers`]: increment(1) }); 
+  showToast("تم توظيف عامل جديد!");
+};
+
+window.updatePrice = async (id, amount) => {
+  let el = document.getElementById(`price_${id}`);
+  let newVal = parseInt(el.value) + amount;
+  if(newVal < 1) newVal = 1;
+  await updateDoc(doc(db, "users", user.uid), { [`projects.${id}.price`]: newVal });
+};
+
+window.updatePriceInput = async (id, val) => {
+  let newVal = parseInt(val);
+  if(isNaN(newVal) || newVal < 1) newVal = 1;
+  await updateDoc(doc(db, "users", user.uid), { [`projects.${id}.price`]: newVal });
+};
+
 function renderRealEstate() { const list = document.getElementById('realestateList'); if(!list) return; list.innerHTML = ''; REAL_ESTATE.forEach(r => { const owned = uData.properties?.[r.id] || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${r.name}</span><span class="stat-value green">+$${r.income}/h</span></div><div class="project-stats">التكلفة: $${r.cost.toLocaleString('en-US')} | تملك: ${owned}</div><button class="full green" onclick="buyProperty('${r.id}', ${r.cost})">شراء</button></div>`; }); }
 window.buyProperty = async (id, cost) => { if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`properties.${id}`]: increment(1) }); showToast("تم الشراء!"); };
 function renderCars() { const list = document.getElementById('newCarsList'); if(!list) return; list.innerHTML = ''; NEW_CARS.forEach(c => { const owned = uData.cars.includes(c.id); list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${c.name}</span><span class="stat-value gold">$${c.cost.toLocaleString('en-US')}</span></div><button class="full ${owned?'purple':'green'}" onclick="buyCar('${c.id}', ${c.cost})" ${owned?'disabled':''}>${owned?'مُملوكة':'شراء'}</button></div>`; }); }
