@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>💰 Millionaire Cash - Legend</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Cairo',sans-serif;}
+  body{background:#03060f;color:#e2e8f0;min-height:100vh;display:flex;justify-content:center;background-image:radial-gradient(circle at 50% 0%, #0f172a 0%, #03060f 100%);}
+  #app{width:100%;max-width:520px;padding:12px 12px 20px;position:relative;display:none;}
+  
+  .header{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:16px;padding:14px;margin-bottom:12px;position:relative;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
+  .menu-btn{background:none;border:none;color:#38bdf8;font-size:24px;position:absolute;top:15px;left:15px;cursor:pointer;}
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;}
+  .stat{background:rgba(0,0,0,0.5);border-radius:10px;padding:8px 10px;border:1px solid #1e293b;}
+  .stat-label{font-size:10px;color:#94a3b8;} .stat-value{font-size:15px;font-weight:bold;color:#38bdf8;margin-top:2px;}
+  .stat-value.gold{color:#fbbf24;} .stat-value.green{color:#10b981;} .stat-value.purple{color:#a78bfa;} .stat-value.red{color:#ef4444;}
+  
+  .sidebar{position:fixed;top:0;right:-100%;width:300px;height:100%;background:#0f172a;z-index:200;transition:0.3s;padding:20px 10px;overflow-y:auto;box-shadow:-5px 0 25px rgba(0,0,0,0.9);border-left:1px solid #334155;}
+  .sidebar.open{right:0;} .sidebar-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.9);z-index:199;display:none;} .sidebar-overlay.active{display:block;}
+  .sidebar-header{text-align:center; margin-bottom:20px; color:#38bdf8; font-weight:bold; border-bottom:1px solid #334155; padding-bottom:10px;}
+  .sidebar ul{list-style:none;} .sidebar li{padding:12px; border-bottom:1px solid #1e293b; cursor:pointer; display:flex; justify-content:space-between; align-items:center; color:#cbd5e1; font-size:13px; font-weight:600;}
+  .sidebar li:hover{background:#1e293b; color:#38bdf8;}
+  
+  .card{background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #334155;border-radius:16px;padding:14px;margin-bottom:12px;box-shadow:0 4px 15px rgba(0,0,0,0.4);}
+  .card h3{color:#38bdf8;font-size:15px;margin-bottom:10px;display:flex;align-items:center;gap:6px;}
+  button{font-family:inherit;cursor:pointer;border:none;border-radius:10px;padding:10px 14px;font-size:13px;font-weight:bold;transition:all 0.2s;color:white;background:linear-gradient(135deg,#0284c7,#38bdf8);}
+  button:active:not(:disabled){transform:scale(0.96);}
+  button:disabled{background:#1e293b !important; color:#475569 !important; border:1px solid #334155; cursor:not-allowed;}
+  button.purple{background:linear-gradient(135deg,#6d28d9,#a78bfa);} button.gold{background:linear-gradient(135deg,#b45309,#fbbf24);color:#fff;}
+  button.green{background:linear-gradient(135deg,#047857,#10b981);} button.red{background:linear-gradient(135deg,#991b1b,#ef4444);} button.full{width:100%;}
+  input{background:#0b1120;border:1px solid #334155;color:#f8fafc;padding:10px;border-radius:8px;font-size:14px;width:100%;margin-bottom:10px;text-align:center;font-weight:bold;}
+  .row{display:flex;gap:8px;margin-bottom:8px;} .row > *{flex:1;}
+  
+  .wealth-item{display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; margin-bottom:8px; border-right:3px solid #38bdf8;}
+  .wealth-title{font-size:12px; color:#94a3b8;} .wealth-val{font-size:14px; font-weight:bold; color:#fff;}
+  .project-card{background:#0f172a;border:1px solid #1e293b;border-radius:12px;padding:12px;margin-bottom:12px;}
+  .project-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;}
+  .project-title{font-size:14px;font-weight:bold;color:#38bdf8;} .project-stats{font-size:11px;color:#94a3b8;margin-bottom:8px;line-height:1.6;}
+  
+  .keypad{display:flex; align-items:center; gap:5px; margin-bottom:10px;}
+  .keypad input{flex:1; margin:0;} .keypad button{width:40px; height:40px; padding:0; font-size:18px;}
+  .countdown-box{background:#0b1120; border:1px solid #334155; border-radius:10px; padding:10px; text-align:center; margin-top:10px;}
+  .progress-bar{width:100%; height:6px; background:#1e293b; border-radius:3px; overflow:hidden; margin-top:5px;}
+  .progress-fill{height:100%; background:#38bdf8; width:0%; transition:width 0.5s linear;}
+  .progress-fill.green{background:#10b981;} .countdown-text{font-size:12px; font-weight:bold; color:#38bdf8; font-family:monospace;}
+  
+  .toast{position:fixed;top:20px;left:50%;transform:translateX(-50%) translateY(-100px);background:linear-gradient(135deg,#0f172a,#1e293b);border:1px solid #38bdf8;color:#f8fafc;padding:10px 18px;border-radius:12px;font-size:13px;font-weight:bold;z-index:999;transition:transform 0.3s;max-width:90%;text-align:center;box-shadow:0 4px 15px rgba(56, 189, 248, 0.2);}
+  .toast.show{transform:translateX(-50%) translateY(0);}
+  .tab-content{display:none;} .tab-content.active{display:block;animation:fadeIn 0.3s;}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:none;}}
+  
+  #auth-screen { width:100%;max-width:520px;padding:20px; display:block; }
+  .auth-box { background: rgba(15,23,42,0.98); padding: 30px; border-radius: 16px; text-align: center; margin-top: 15vh; border: 1px solid #334155;}
+  #auth-msg { margin-top: 15px; font-size: 14px; font-weight: bold; padding: 10px; border-radius: 8px; display: none; }
+  .msg-error { color: #ef4444; background: rgba(239, 68, 68, 0.1); border: 1px solid #ef4444; }
+  .msg-success { color: #10b981; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; }
+
+  .bm-header{background:linear-gradient(135deg, #2e1010, #450a0a); border:1px solid #7f1d1d; border-radius:16px; padding:15px; margin-bottom:15px;}
+  .bm-stat{display:flex; justify-content:space-between; margin-bottom:10px; font-size:13px;}
+  .bm-stat span{color:#fca5a5;} .bm-stat strong{color:#fff;}
+  .bm-trade{background:#0f172a; border:1px solid #334155; border-radius:12px; padding:12px; margin-bottom:12px;}
+  .bm-trade-title{color:#ef4444; font-size:14px; font-weight:bold; margin-bottom:8px;}
+  .bm-trade-details{font-size:11px; color:#94a3b8; margin-bottom:10px; line-height:1.8;}
+  .badge{display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:bold;}
+  .badge.easy{background:#10b981; color:#fff;} .badge.med{background:#fbbf24; color:#fff;} .badge.hard{background:#ef4444; color:#fff;}
+
+  .game-grid{display:grid; grid-template-columns: 1fr 1fr; gap: 8px;}
+  .game-box{background:#0f172a; border:1px solid #334155; padding:10px; border-radius:10px; text-align:center; display:flex; flex-direction:column; gap:5px;}
+  .game-box .title{font-size:14px; font-weight:bold; color:#38bdf8;}
+  .game-box input{margin:0; padding:5px; font-size:12px; background:#0b1120; border:1px solid #334155;}
+  .game-box button{padding:8px; font-size:12px;}
+</style>
+</head>
+<body>
+
+<div id="auth-screen">
+  <div class="auth-box">
+    <h1 style="color:#38bdf8;margin-bottom:20px;">Millionaire Cash 💸</h1>
+    <div id="login-form">
+      <h2>تسجيل الدخول</h2>
+      <input type="text" id="login-username" placeholder="اسم المستخدم">
+      <input type="password" id="login-password" placeholder="كلمة المرور">
+      <button onclick="doLogin()" class="full">دخول</button>
+      <p style="margin-top:15px;font-size:13px;">معندكش حساب؟ <span onclick="toggleAuth('register')" style="color:#38bdf8;cursor:pointer;">سجل جديد</span></p>
+    </div>
+    <div id="register-form" style="display: none;">
+      <h2>تسجيل جديد</h2>
+      <input type="text" id="reg-username" placeholder="اسم المستخدم">
+      <input type="email" id="reg-email" placeholder="البريد الإلكتروني">
+      <input type="password" id="reg-password" placeholder="كلمة المرور (6 أحرف)">
+      <button onclick="doRegister()" class="full purple">إنشاء الحساب</button>
+      <p style="margin-top:15px;font-size:13px;">عندك حساب؟ <span onclick="toggleAuth('login')" style="color:#38bdf8;cursor:pointer;">سجل دخول</span></p>
+    </div>
+    <p id="auth-msg"></p>
+  </div>
+</div>
+
+<div id="app">
+  <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleMenu()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">Millionaire Cash<br><span style="font-size:12px; color:#94a3b8;">Legend Edition</span></div>
+    <ul>
+      <li onclick="switchTab('home')"><span>🏠 الرئيسية</span><span>🏠</span></li>
+      <li onclick="switchTab('chat')"><span>🗣️ الشات العام</span><span>🗣️</span></li>
+      <li onclick="switchTab('jobs')"><span>💼 الوظائف</span><span>💼</span></li>
+      <li onclick="switchTab('invest')"><span>📈 الاستثمار والأسهم</span><span>📈</span></li>
+      <li onclick="switchTab('bank')"><span>🏦 البنك والتحويل</span><span>🏦</span></li>
+      <li onclick="switchTab('business')"><span>🏭 المشاريع الصناعية</span><span>🏭</span></li>
+      <li onclick="switchTab('realestate')"><span>🏠 العقارات</span><span>🏠</span></li>
+      <li onclick="switchTab('cars')"><span>🚗 السيارات</span><span>🚗</span></li>
+      <li onclick="switchTab('farm')"><span>🌾 المزرعة</span><span>🌾</span></li>
+      <li onclick="switchTab('export')"><span>🚢 التصدير والاستيراد</span><span>🚢</span></li>
+      <li onclick="switchTab('missions')"><span>📅 المهام اليومية</span><span>📅</span></li>
+      <li onclick="switchTab('corps')"><span>🏢 الشركات المساهمة</span><span>🏢</span></li>
+      <li onclick="switchTab('gangs')"><span>👑 التحالفات</span><span>👑</span></li>
+      <li onclick="switchTab('racing')"><span>🏎️ سباقات الشوارع</span><span>🏎️</span></li>
+      <li onclick="switchTab('codes')"><span>🎁 الأكواد والهدايا</span><span>🎁</span></li>
+      <li onclick="switchTab('games')"><span>🎰 الألعاب</span><span>🎰</span></li>
+      <li onclick="switchTab('blackmarket')"><span>🕶️ السوق السوداء</span><span>🕶️</span></li>
+      <li onclick="doLogout()" style="color:#ef4444;margin-top:20px;"><span>🚪 خروج</span><span>🚪</span></li>
+    </ul>
+  </div>
+
+  <div class="header">
+    <button class="menu-btn" onclick="toggleMenu()">☰</button>
+    <div style="text-align:center; margin-bottom:10px; color:#38bdf8; font-weight:bold; font-size:14px;" id="usernameDisplay">اللاعب</div>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-label">💰 الكاش المتاح</div><div class="stat-value" id="cash">$0</div></div>
+      <div class="stat"><div class="stat-label">🏦 البنك</div><div class="stat-value green" id="bank">$0</div></div>
+      <div class="stat"><div class="stat-label">💎 صافي الثروة</div><div class="stat-value purple" id="netWorth">$0</div></div>
+      <div class="stat"><div class="stat-label">🕶️ أموال قذرة</div><div class="stat-value red" id="dirtyCash">$0</div></div>
+    </div>
+    <div style="font-size:11px;color:#94a3b8;display:flex;justify-content:space-between;margin-top:5px;">
+      <span>XP: <span id="xpText" style="color:#38bdf8;">0/150</span></span>
+      <span id="jobText">عاطل</span>
+    </div>
+    <div style="background:#0b1120;height:8px;border-radius:4px;overflow:hidden;margin-top:6px;">
+      <div id="xpBar" style="height:100%;background:linear-gradient(90deg,#38bdf8,#0284c7);width:0%;"></div>
+    </div>
+  </div>
+
+  <div class="tab-content active" id="tab-home">
+    <div class="card">
+      <h3>💼 لوحة العمل</h3>
+      <div style="display:flex; justify-content:space-between; align-items:center; padding:10px; background:#0b1120; border-radius:10px; margin-bottom:10px;">
+        <div><strong id="currentJobName">عاطل عن العمل</strong><br><small id="currentJobPay" style="color:#94a3b8;">الراتب: $0</small></div>
+      </div>
+      <button onclick="doWork()" id="btnWork" class="full" style="display:flex; justify-content:space-between; align-items:center; padding:15px;"><span>⚡ العمل العادي</span><span id="workTimer" style="font-size:11px;">جاهز</span></button>
+      <button onclick="doExtraWork()" id="btnExtra" class="full purple" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-top:10px;"><span>🔥 نوبة إضافية (x3)</span><span id="extraTimer" style="font-size:11px;">جاهز</span></button>
+    </div>
+    <div class="card">
+      <h3 style="justify-content:center; font-size:16px;">💎 تفصيل صافي الثروة</h3>
+      <div style="text-align:center; margin-bottom:15px;"><div style="font-size:24px; font-weight:bold; color:#fbbf24;" id="wealthTotal">$0</div></div>
+      <div class="wealth-item"><div class="wealth-title">السيولة (كاش + بنك)</div><div class="wealth-val" id="w-cash">$0</div></div>
+      <div class="wealth-item"><div class="wealth-title">الأسهم والذهب</div><div class="wealth-val" id="w-stocks">$0</div></div>
+      <div class="wealth-item"><div class="wealth-title">العقارات والسيارات</div><div class="wealth-val" id="w-props">$0</div></div>
+      <div class="wealth-item"><div class="wealth-title">المشاريع والبضائع</div><div class="wealth-val" id="w-factory">$0</div></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-chat">
+    <div class="card">
+      <h3>🗣️ الشات العام</h3>
+      <div id="chatBox" style="height:300px; overflow-y:auto; background:#0b1120; border-radius:10px; padding:10px; margin-bottom:10px; font-size:12px;"></div>
+      <input type="text" id="chatInput" placeholder="اكتب رسالتك هنا...">
+      <button class="full purple" onclick="sendChat()">إرسال</button>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-jobs"><div class="card"><h3>💼 الوظائف</h3><div id="jobsList"></div></div></div>
+
+  <div class="tab-content" id="tab-invest">
+    <div class="card">
+      <h3>📊 البورصة والذهب</h3>
+      <div class="update-bar"><span>تحديث الأسعار خلال:</span> <strong id="marketTimer">30s</strong></div>
+      <canvas id="stockChart" style="max-height: 200px; margin-bottom: 15px;"></canvas>
+      <div id="stocksList" style="margin-top:15px;"></div>
+      <div style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
+        <h3 style="color:#fbbf24;">🪙 تجارة الذهب</h3>
+        <div class="project-card" style="border-color:#fbbf24;">
+          <div class="project-header"><span class="project-title">سعر الجرام</span><span class="stat-value gold" id="goldPrice">$0</span></div>
+          <div class="project-stats">تملك: <span id="goldOwned">0</span> جرام</div>
+          <div class="keypad"><button onclick="adjustInput('goldQty', -1)" class="red">-</button><input type="number" id="goldQty" value="1" readonly><button onclick="adjustInput('goldQty', 1)" class="green">+</button></div>
+          <div class="row"><button class="green" onclick="buyGold()">شراء</button><button class="gold" onclick="sellGold()">بيع</button></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-bank">
+    <div class="card"><h3>🏦 البنك</h3><input type="number" id="bankAmount" placeholder="اكتب المبلغ..."><div class="row"><button onclick="depositBank()" class="green">إيداع</button><button onclick="withdrawBank()" class="gold">سحب</button></div></div>
+    <div class="card"><h3>💸 تحويل</h3><input type="text" id="transferUser" placeholder="Username"><input type="number" id="transferAmount" placeholder="اكتب المبلغ..."><button onclick="transferMoney()" class="full purple">تحويل</button></div>
+    <div class="card"><h3>💸 فشخرة</h3><button class="gold full" onclick="dropCash()">وزع 10,000$ على 5 لاعبين</button></div>
+  </div>
+
+  <div class="tab-content" id="tab-business"><div class="card"><h3>🏭 المشاريع</h3><div id="businessList"></div></div></div>
+  <div class="tab-content" id="tab-realestate"><div class="card"><h3>🏠 العقارات</h3><div id="realestateList"></div></div></div>
+  <div class="tab-content" id="tab-cars"><div class="card"><h3>🚗 السيارات</h3><div id="newCarsList"></div></div></div>
+  <div class="tab-content" id="tab-farm"><div class="card"><h3>🌾 المزرعة</h3><div id="farmList"></div></div></div>
+  <div class="tab-content" id="tab-missions"><div class="card"><h3>📅 المهام اليومية</h3><div id="missionsList"></div></div></div>
+  <div class="tab-content" id="tab-codes"><div class="card"><h3>🎁 استرداد الأكواد</h3><input type="text" id="codeInput" placeholder="أدخل الكود..."><button class="purple full" onclick="redeemCode()">استرداد</button></div></div>
+
+  <div class="tab-content" id="tab-corps"><div class="card"><h3>🏢 تأسيس شركة مساهمة</h3><input type="text" id="corpName" placeholder="اسم الشركة"><input type="number" id="corpShares" placeholder="عدد الأسهم" value="1000"><button class="purple full" onclick="createCorp()">تأسيس الشركة</button><div id="corpsList" style="margin-top:15px;"></div></div></div>
+  <div class="tab-content" id="tab-gangs"><div class="card"><h3>👑 تكوين تحالف</h3><input type="text" id="gangName" placeholder="اسم التحالف"><button class="purple full" onclick="createGang()">تأسيس</button><div id="gangsList" style="margin-top:15px;"></div></div></div>
+
+  <div class="tab-content" id="tab-racing">
+    <div class="card">
+      <h3>🏎️ سباقات الشوارع</h3>
+      <div class="garage-card" style="background:#1e293b; border-radius:10px; padding:10px; margin-bottom:10px;">
+        <h4 style="color:#fbbf24; margin-bottom:5px;">⚙️ جراج التعديل</h4>
+        <p style="font-size:12px;">مستوى المحرك والإطارات: <span id="tune-level">1</span></p>
+        <button class="gold full" onclick="upgradeTuning()">ترقية (10,000$)</button>
+      </div>
+      <button class="purple full" style="margin-bottom:5px;" onclick="startRace('street', 5000)">سباق شوارع (رهان: 5,000$)</button>
+      <button class="purple full" style="margin-bottom:5px;" onclick="startRace('highway', 25000)">طريق سريع (رهان: 25,000$)</button>
+      <button class="purple full" onclick="startRace('desert', 100000)">سباق صحراوي (رهان: 100,000$)</button>
+      <div id="racingResult" style="text-align:center; font-weight:bold; color:#fff; margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-export">
+    <div class="card">
+      <h3>🚢 شركة الاستيراد والتصدير الدولية</h3>
+      <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center; background:#0b1120; padding:10px; border-radius:10px; margin-bottom:15px; border:1px solid #334155;">
+        <div><span style="font-size:10px; color:#94a3b8; display:block;">إجمالي أرباح التصدير</span><strong id="expTotalProfit" style="color:#10b981; font-size:14px;">$0</strong></div>
+        <div><span style="font-size:10px; color:#94a3b8; display:block;">الشحنات المنجزة</span><strong id="expCompleted" style="color:#38bdf8; font-size:14px;">0</strong></div>
+        <div><span style="font-size:10px; color:#94a3b8; display:block;">إشغال المستودع</span><strong id="expWarehouse" style="color:#fbbf24; font-size:14px;">0/50</strong></div>
+      </div>
+      <div id="exportCompaniesList"></div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-games">
+    <div class="card">
+      <h3>🎰 صالة الألعاب (15 لعبة)</h3>
+      <div id="gamesList" class="game-grid" style="margin-top:10px;"></div>
+      <div id="gameResult" style="text-align:center; padding:12px; margin-top:15px; font-weight:bold; background:#0b1120; border-radius:10px; border:1px solid #334155;">النتيجة</div>
+    </div>
+  </div>
+
+  <div class="tab-content" id="tab-blackmarket">
+    <div class="bm-header">
+      <h3 style="color:#ef4444; margin-bottom:10px;">🕶️ السوق السوداء وعالم الصفقات السرية</h3>
+      <p style="font-size:11px; color:#fca5a5; margin-bottom:10px;">عوائد مالية طائلة ومخاطر أمنية مضاعفة. أرباح الصفقات (أموال مشبوهة) وتتطلب غسيلها لتحويلها لرصيد شرعي.</p>
+      
+      <div class="bm-stat"><span>أموال مشبوهة:</span> <strong id="bmDirtyCash">$0</strong></div>
+      <div class="bm-stat"><span>السمعة:</span> <strong id="bmReputation">100</strong></div>
+      <div class="bm-stat"><span>الملاحقة:</span> <strong id="bmHeat">0</strong></div>
+      <div class="bm-stat"><span>الصفقات اليومية:</span> <strong id="bmTradesLeft">15 / 15</strong></div>
+      
+      <button class="gold full" style="margin-top:10px;" onclick="bribePolice()">🤝 رشوة وإسقاط الملاحقة (5000$)</button>
+    </div>
+
+    <div class="card">
+      <h3>💸 غرفة غسيل وتبييض الأموال</h3>
+      <p style="font-size:11px; color:#aaa; margin-bottom:10px;">حول الأرباح المشبوهة إلى رصيد بنكي شرعي. (ضريبة غسيل 22% أو 15% مع Zero-Trace).</p>
+      
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <span style="font-size:12px; color:#fca5a5;">المتاح كاش مشبوه: <span id="bmDirtyCash2">$0</span></span>
+        <span style="font-size:12px; background:#064e3b; color:#10b981; padding:2px 8px; border-radius:4px;">الضريبة الحالية: <span id="launderTax">22%</span></span>
+      </div>
+
+      <div class="row">
+        <button class="red" onclick="adjustInput('launderAmount', -10000)">-</button>
+        <input type="number" id="launderAmount" placeholder="أدخل مبلغ المال المشبوه" value="0">
+        <button class="green" onclick="adjustInput('launderAmount', 10000)">+</button>
+      </div>
+      
+      <div class="row" style="margin-bottom:10px;">
+        <button class="purple" onclick="setLaunderAmount(0.25)">25%</button>
+        <button class="purple" onclick="setLaunderAmount(0.5)">50%</button>
+        <button class="red" onclick="setLaunderAmount(1)">100% (الكل)</button>
+      </div>
+
+      <button class="green full" onclick="launderMoney()">🔄 غسيل وتحويل إلى البنك</button>
+    </div>
+
+    <div class="card">
+      <h3>🛡️ عتاد التخفي وأدوات التشويش (Black-Ops)</h3>
+      <p style="font-size:11px; color:#aaa; margin-bottom:10px;">معدات خاصة تقلل المخاطر وتؤمن عملياتك.</p>
+      <div id="blackOpsList"></div>
+    </div>
+
+    <div class="card">
+      <h3>📦 عمليات وصفقات السوق السوداء المتاحة</h3>
+      <div id="bmTradesList"></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, updateDoc, increment, onSnapshot, collection, query, where, getDocs, addDoc, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDd6HmrAB-HC1O32p3eSZ18KT_XV7UwIyc",
+  authDomain: "money-cash-a55b8.firebaseapp.com",
+  projectId: "money-cash-a55b8",
+  storageBucket: "money-cash-a55b8.firebasestorage.app",
+  messagingSenderId: "362569015062",
+  appId: "1:362569015062:web:bafc7f00f417b15dd9fa37"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+const JOBS = [ {id:1, name:'عامل نظافة', pay:15, xp:10, reqXp: 150}, {id:2, name:'موظف كاشير', pay:40, xp:20, reqXp: 1300}, {id:3, name:'سائق توصيل', pay:100, xp:40, reqXp: 3500}, {id:4, name:'بائع', pay:250, xp:80, reqXp: 10000}, {id:5, name:'مبرمج', pay:600, xp:150, reqXp: 25000}, {id:6, name:'مهندس', pay:1500, xp:300, reqXp: 60000}, {id:7, name:'طبيب', pay:4000, xp:600, reqXp: 150000}, {id:8, name:'محامي', pay:10000, xp:1000, reqXp: 300000}, {id:9, name:'مدير شركة', pay:25000, xp:2000, reqXp: 600000}, {id:10, name:'مستثمر', pay:50000, xp:5000, reqXp: 1000000}, {id:11, name:'رئيس جمهورية', pay:100000, xp:10000, reqXp: 2500000}, {id:12, name:'وزير', pay:200000, xp:20000, reqXp: 5000000}, {id:13, name:'لواء', pay:500000, xp:50000, reqXp: 10000000}, {id:14, name:'ملياردير', pay:1000000, xp:100000, reqXp: 25000000}, {id:15, name:'إمبراطور', pay:5000000, xp:500000, reqXp: 100000000} ];
+const STOCKS = [ { sym:'COMI', name:'CIB', price: 75.5, history: [] }, { sym:'HRHO', name:'هيرميس', price: 18.2, history: [] }, { sym:'TMGH', name:'طلعت', price: 45.0, history: [] }, { sym:'OLFI', name:'عبورلاند', price: 6.2, history: [] }, { sym:'ETEL', name:'اتصالات', price: 12.5, history: [] }, { sym:'SWDY', name:'السويدي', price: 35.8, history: [] }, { sym:'ABUK', name:'أبو قير', price: 22.1, history: [] }, { sym:'ORAS', name:'أوراسكوم', price: 120.0, history: [] }, { sym:'JUFO', name:'جهينة', price: 8.5, history: [] }, { sym:'EAST', name:'الشرقية', price: 55.0, history: [] }, { sym:'PHDC', name:'بالم هيلز', price: 4.2, history: [] }, { sym:'MNHD', name:'مدينة نصر', price: 3.8, history: [] }, { sym:'SKPC', name:'سيدي كرير', price: 15.0, history: [] }, { sym:'ESRS', name:'حديد عز', price: 28.0, history: [] }, { sym:'AMOC', name:'زيوت', price: 10.5, history: [] } ];
+const PROJECTS = [ { id: 'p1', name: 'عربة فول', cost: 1000, income: 2 }, { id: 'p2', name: 'كشك حلوى', cost: 3000, income: 6 }, { id: 'p3', name: 'قهوة', cost: 5000, income: 12 }, { id: 'p4', name: 'مطعم', cost: 15000, income: 40 }, { id: 'p5', name: 'ملابس', cost: 30000, income: 80 }, { id: 'p6', name: 'ورشة', cost: 50000, income: 150 }, { id: 'p7', name: 'مخبز', cost: 100000, income: 300 }, { id: 'p8', name: 'دواجن', cost: 200000, income: 600 }, { id: 'p9', name: 'بنزين', cost: 400000, income: 1200 }, { id: 'p10', name: 'سوبر', cost: 800000, income: 2500 }, { id: 'p11', name: 'نقل', cost: 1500000, income: 5000 }, { id: 'p12', name: 'أثاث', cost: 3000000, income: 10000 }, { id: 'p13', name: 'برمجة', cost: 5000000, income: 18000 }, { id: 'p14', name: 'مستشفى', cost: 10000000, income: 40000 }, { id: 'p15', name: 'طيران', cost: 20000000, income: 100000 } ];
+const REAL_ESTATE = [ { id: 'r1', name: 'شقة', cost: 3000, income: 10 }, { id: 'r2', name: 'محل', cost: 15000, income: 60 }, { id: 'r3', name: 'فيلا', cost: 50000, income: 250 }, { id: 'r4', name: 'عمارة', cost: 200000, income: 1200 }, { id: 'r5', name: 'برج', cost: 1000000, income: 7000 }, { id: 'r6', name: 'مول', cost: 5000000, income: 40000 }, { id: 'r7', name: 'فندق', cost: 20000000, income: 180000 }, { id: 'r8', name: 'ملاهي', cost: 50000000, income: 500000 }, { id: 'r9', name: 'ملعب', cost: 100000000, income: 1100000 }, { id: 'r10', name: 'إمارة', cost: 500000000, income: 6000000 }, { id: 'r11', name: 'جزيرة', cost: 1000000000, income: 15000000 }, { id: 'r12', name: 'برج خليفة', cost: 5000000000, income: 80000000 }, { id: 'r13', name: 'فضاء', cost: 10000000000, income: 200000000 }, { id: 'r14', name: 'مدينة ذكية', cost: 50000000000, income: 1000000000 }, { id: 'r15', name: 'كوكب', cost: 100000000000, income: 5000000000 } ];
+const NEW_CARS = [ { id: 'c1', name: 'فيات', cost: 5000, rent: 5 }, { id: 'c2', name: 'لادا', cost: 10000, rent: 10 }, { id: 'c3', name: 'هيونداي', cost: 50000, rent: 60 }, { id: 'c4', name: 'تويوتا', cost: 100000, rent: 150 }, { id: 'c5', name: 'مرسيدس', cost: 300000, rent: 500 }, { id: 'c6', name: 'BMW', cost: 600000, rent: 1000 }, { id: 'c7', name: 'بورش', cost: 2000000, rent: 4000 }, { id: 'c8', name: 'فيراري', cost: 5000000, rent: 10000 }, { id: 'c9', name: 'لامبو', cost: 8000000, rent: 18000 }, { id: 'c10', name: 'بوغاتي', cost: 20000000, rent: 50000 }, { id: 'c11', name: 'ماكلارين', cost: 30000000, rent: 80000 }, { id: 'c12', name: 'رولز', cost: 50000000, rent: 120000 }, { id: 'c13', name: 'طائرة', cost: 200000000, rent: 500000 }, { id: 'c14', name: 'يخت', cost: 500000000, rent: 1500000 }, { id: 'c15', name: 'غواصة', cost: 1000000000, rent: 4000000 } ];
+const CROPS = [ { id: 'wheat', name: 'قمح', cost: 100, time: 60, sell: 150 }, { id: 'tomato', name: 'طماطم', cost: 300, time: 120, sell: 500 }, { id: 'cotton', name: 'قطن', cost: 800, time: 300, sell: 1500 }, { id: 'mango', name: 'مانجو', cost: 2000, time: 600, sell: 4000 }, { id: 'cactus', name: 'صبار', cost: 10000, time: 1800, sell: 25000 }, { id: 'saffron', name: 'زعفران', cost: 50000, time: 3600, sell: 140000 }, { id: 'truffle', name: 'كمأة', cost: 200000, time: 7200, sell: 600000 }, { id: 'orchid', name: 'أوركيد', cost: 1000000, time: 10800, sell: 3500000 }, { id: 'cocoa', name: 'كاكاو', cost: 5000000, time: 14400, sell: 20000000 }, { id: 'apple', name: 'تفاحة ذهبية', cost: 20000000, time: 18000, sell: 90000000 }, { id: 'moon', name: 'غبار القمر', cost: 100000000, time: 21600, sell: 500000000 }, { id: 'dragon', name: 'تنين', cost: 500000000, time: 28800, sell: 3000000000 }, { id: 'star', name: 'بذور النجوم', cost: 1000000000, time: 36000, sell: 8000000000 }, { id: 'alien', name: 'نبات فضائي', cost: 5000000000, time: 43200, sell: 50000000000 }, { id: 'eternity', name: 'زهرة الخلود', cost: 10000000000, time: 86400, sell: 200000000000 } ];
+const EXPORT_GOODS = [ { id: 'e1', n: 'أزياء وملابس ماركات عالمية', company: 'مؤسسة التجارة الحرة بسنغافورة', c: 5000, sMin: 5900, sMax: 6250, t: 15, icon: '👕' }, { id: 'e2', n: 'قطع غيار سيارات أوروبية', company: 'الهيئة العامة للتوريدات', c: 25000, sMin: 29500, sMax: 32000, t: 180, icon: '⚙️' }, { id: 'e3', n: 'ألواح وخلايا طاقة شمسية', company: 'كونسورتيوم برلين للطاقة', c: 50000, sMin: 60000, sMax: 65000, t: 300, icon: '🔋' }, { id: 'e4', n: 'سيارات فارغة ومدرعة', company: 'تكتل شركات التكنولوجيا بطوكيو', c: 120000, sMin: 145000, sMax: 156000, t: 480, icon: '🚓' }, { id: 'e5', n: 'توربينات وخطوط إنتاج', company: 'خزائن وبئر نجد للمعادن', c: 250000, sMin: 305000, sMax: 335000, t: 720, icon: '🏭' }, { id: 'e6', n: 'رقائق ومعالجات سيليكونية', company: 'نخبة عملاء المصارف الخامة', c: 500000, sMin: 610000, sMax: 670000, t: 1080, icon: '💻' }, { id: 'e7', n: 'بن إسبريسو كولومبي فاخر', company: 'مجموعة تيجززة دبي القابضة', c: 8000, sMin: 9500, sMax: 10200, t: 15, icon: '☕' }, { id: 'e8', n: 'سبائك ذهب ومعادن نقية', company: 'الشركة الدولية للسيارات', c: 1000000, sMin: 1150000, sMax: 1250000, t: 1440, icon: '🪙' }, { id: 'e9', n: 'نفط خام', company: 'شركة النفط الوطنية', c: 2000000, sMin: 2300000, sMax: 2500000, t: 1800, icon: '🛢️' }, { id: 'e10', n: 'طائرات خاصة صغيرة', company: 'مطار الطيران الدولي', c: 10000000, sMin: 11500000, sMax: 12500000, t: 3600, icon: '✈️' }, { id: 'e11', n: 'أسلحة دفاعية متطورة', company: 'وزارة الدفاع', c: 50000000, sMin: 60000000, sMax: 65000000, t: 7200, icon: '🔫' }, { id: 'e12', n: 'أقمار صناعية', company: 'وكالة الفضاء الدولية', c: 200000000, sMin: 250000000, sMax: 280000000, t: 14400, icon: '🛰️' }, { id: 'e13', n: 'غواصات نووية', company: 'الأسطول البحري', c: 1000000000, sMin: 1200000000, sMax: 1400000000, t: 28800, icon: '🚢' }, { id: 'e14', n: 'محطات فضاء', company: 'ناسا', c: 5000000000, sMin: 6000000000, sMax: 7000000000, t: 43200, icon: '🚀' }, { id: 'e15', n: 'مدن فضائية كاملة', company: 'شركة سبيس إكس', c: 50000000000, sMin: 60000000000, sMax: 70000000000, t: 86400, icon: '🌌' } ];
+const MISSIONS = [ { id: 'm1', text: 'اعمل 10 مرات', target: 10, reward: 1000, type: 'work' }, { id: 'm2', text: 'العب 5 ألعاب', target: 5, reward: 500, type: 'games' }, { id: 'm3', text: 'اشترِ 5 أسهم', target: 5, reward: 2000, type: 'stocks' }, { id: 'm4', text: 'احصد 3 محاصيل', target: 3, reward: 1500, type: 'farm' }, { id: 'm5', text: 'صدّر 2 شحنة', target: 2, reward: 5000, type: 'export' } ];
+const GAMES = [ { id: 'g1', name: 'سلوتس', icon: '🎰', chance: 0.2, mult: 5 }, { id: 'g2', name: 'روليت', icon: '🎡', chance: 0.45, mult: 2 }, { id: 'g3', name: 'الطيارة', icon: '✈️', chance: 0.4, mult: 2.5 }, { id: 'g4', name: 'حجر ورق', icon: '✊', chance: 0.33, mult: 3 }, { id: 'g5', name: 'نرد', icon: '🎲', chance: 0.16, mult: 6 }, { id: 'g6', name: 'عملة', icon: '🪙', chance: 0.5, mult: 1.9 }, { id: 'g7', name: 'ألماس', icon: '💎', chance: 0.1, mult: 9 }, { id: 'g8', name: 'عجلة', icon: '🎯', chance: 0.3, mult: 3.5 }, { id: 'g9', name: 'كينو', icon: '🔢', chance: 0.25, mult: 4 }, { id: 'g10', name: 'بلاك جاك', icon: '🃏', chance: 0.48, mult: 2.1 }, { id: 'g11', name: 'بوكر', icon: '♠️', chance: 0.15, mult: 6 }, { id: 'g12', name: 'VIP', icon: '🎰', chance: 0.08, mult: 12 }, { id: 'g13', name: 'تخمين', icon: '🔟', chance: 0.1, mult: 10 }, { id: 'g14', name: 'سباق', icon: '🏇', chance: 0.2, mult: 5 }, { id: 'g15', name: 'مافيا', icon: '🕵️', chance: 0.35, mult: 3 } ];
+const BLACK_OPS = [ { id: 'bo1', n: 'جهاز تشويش رادارات الشرطة', c: 80000, d: 'يقلل احتمالية المداهمة بنسبة 6% لمدة 4 دقائق.' }, { id: 'bo2', n: 'جواز سفر دبلوماسي مزور', c: 150000, d: 'حماية طوارئ لمرة واحدة - يضمن الهروب وتفادي السجن.' }, { id: 'bo3', n: 'بروتوكول تشفير مالي (Zero-Trace)', c: 200000, d: 'يخفض ضريبة غسيل وتبييض الأموال إلى 15% بدلاً من 22%.' }, { id: 'bo4', n: 'شريحة اتصال كبار المسؤولين', c: 1000000, d: 'تخفض تكلفة الرشوة وإسقاط الملاحقات الأمنية.' } ];
+const BM_TRADES = [ { id: 't1', n: 'تهريب بضائع وسيجار جمركي فاخر', lvl: 'easy', cap: 6000, ret: 8500, rate: 85, cd: 2 }, { id: 't2', n: 'تهريب حاوية أجهزة إلكترونية حديثة', lvl: 'med', cap: 35000, ret: 48000, rate: 60, cd: 3 }, { id: 't3', n: 'صفقة تسريب سيرفرات وبيانات استخباراتية', lvl: 'hard', cap: 120000, ret: 165000, rate: 40, cd: 5 }, { id: 't4', n: 'أسطول التهريب والشحن الدولي', lvl: 'hard', cap: 500000, ret: 800000, rate: 30, cd: 10 } ];
+
+let user = null; let uData = null; let unsub = null; let chatUnsub = null;
+let workCd = false; let extraCd = false;
+let currentMarketStocks = JSON.parse(JSON.stringify(STOCKS));
+let chartInstance = null; let currentGoldPrice = 60; let marketTimer = 30; let gameCooldown = false;
+
+window.toggleAuth = (mode) => { document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none'; document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none'; document.getElementById('auth-msg').style.display = 'none'; };
+function showAuthMsg(t, isErr=true) { const el = document.getElementById('auth-msg'); el.innerText = t; el.className = isErr ? 'msg-error' : 'msg-success'; el.style.display = 'block'; }
+
+window.doRegister = async () => {
+  const un = document.getElementById('reg-username').value.trim(); const em = document.getElementById('reg-email').value.trim(); const pw = document.getElementById('reg-password').value;
+  if(!un || !em || !pw) return showAuthMsg("أكمل البيانات"); if(pw.length < 6) return showAuthMsg("كلمة المرور 6 أحرف على الأقل");
+  showAuthMsg("جاري التسجيل...", false);
+  try {
+    const cred = await createUserWithEmailAndPassword(auth, em, pw);
+    await setDoc(doc(db, "users", cred.user.uid), {
+      username: un, email: em, cash: 0, bank: 0, dirtyCash: 0, xp: 0, currentJobId: 1,
+      stocks: {}, properties: {}, projects: {}, gold: 0, cars: [], farm: [], 
+      missions: {}, blackMarket: { reputation: 100, heat: 0, tradesToday: 0, ownedGear: [] },
+      export: { totalProfit: 0, completed: 0, shipments: [] }, corporations: [], gang: null, unlockedCodes: [], tuning: 1
+    });
+  } catch(e) { showAuthMsg("خطأ: " + (e.code === 'auth/email-already-in-use' ? "الإيميل مستخدم" : e.message)); }
+};
+window.doLogin = async () => {
+  const un = document.getElementById('login-username').value.trim(); const pw = document.getElementById('login-password').value;
+  if(!un || !pw) return showAuthMsg("أدخل البيانات"); showAuthMsg("جاري الدخول...", false);
+  try {
+    const q = query(collection(db, "users"), where("username", "==", un)); const snap = await getDocs(q);
+    if(snap.empty) return showAuthMsg("المستخدم غير موجود");
+    await signInWithEmailAndPassword(auth, snap.docs[0].data().email, pw);
+  } catch(e) { showAuthMsg("كلمة المرور خاطئة"); }
+};
+window.doLogout = () => signOut(auth);
+
+onAuthStateChanged(auth, (usr) => {
+  if(usr) {
+    user = usr; document.getElementById('auth-screen').style.display = 'none'; document.getElementById('app').style.display = 'block';
+    if(unsub) unsub();
+    unsub = onSnapshot(doc(db, "users", usr.uid), (d) => { if(d.exists()) { uData = d.data(); document.getElementById('usernameDisplay').innerText = uData.username; updateUI(); } });
+    listenChat();
+  } else { user = null; uData = null; document.getElementById('auth-screen').style.display = 'block'; document.getElementById('app').style.display = 'none'; }
+});
+
+window.toggleMenu = () => { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('sidebar-overlay').classList.toggle('active'); };
+window.switchTab = (id) => { document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active')); document.getElementById(`tab-${id}`).classList.add('active'); toggleMenu(); };
+function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = 'toast show'; setTimeout(() => t.className = 'toast', 3000); }
+window.adjustInput = (id, amount) => { const el = document.getElementById(id); let val = parseInt(el.value) || 0; val += amount; if(val < 0) val = 0; el.value = val; };
+
+function updateUI() {
+  if(!uData) return;
+  const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0];
+  document.getElementById('cash').innerText = `$${Math.floor(uData.cash).toLocaleString('en-US')}`;
+  document.getElementById('bank').innerText = `$${Math.floor(uData.bank).toLocaleString('en-US')}`;
+  document.getElementById('dirtyCash').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
+  document.getElementById('bmDirtyCash').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
+  document.getElementById('bmDirtyCash2').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
+  document.getElementById('jobText').innerText = job.name; document.getElementById('currentJobName').innerText = job.name;
+  document.getElementById('currentJobPay').innerText = `الراتب: $${job.pay} | XP: +${job.xp}`;
+  
+  let stocksVal = 0; currentMarketStocks.forEach(s => { stocksVal += (uData.stocks?.[s.sym] || 0) * s.price; });
+  let goldVal = (uData.gold || 0) * currentGoldPrice;
+  let propsVal = 0; for(let p in uData.properties) { propsVal += uData.properties[p] * (REAL_ESTATE.find(x=>x.id===p)?.cost || 0); }
+  let carsVal = 0; uData.cars.forEach(c => { carsVal += NEW_CARS.find(x=>x.id===c)?.cost || 0; });
+  let projVal = 0; for(let p in uData.projects) { projVal += (uData.projects[p].level || 0) * (PROJECTS.find(x=>x.id===p)?.cost || 0); }
+  
+  let net = uData.cash + uData.bank + stocksVal + goldVal + propsVal + carsVal + projVal;
+  document.getElementById('netWorth').innerText = `$${Math.floor(net).toLocaleString('en-US')}`;
+  document.getElementById('wealthTotal').innerText = `$${Math.floor(net).toLocaleString('en-US')}`;
+  document.getElementById('w-cash').innerText = `$${Math.floor(uData.cash + uData.bank).toLocaleString('en-US')}`;
+  document.getElementById('w-stocks').innerText = `$${Math.floor(stocksVal + goldVal).toLocaleString('en-US')}`;
+  document.getElementById('w-props').innerText = `$${Math.floor(propsVal + carsVal).toLocaleString('en-US')}`;
+  document.getElementById('w-factory').innerText = `$${Math.floor(projVal).toLocaleString('en-US')}`;
+  document.getElementById('xpText').innerText = `${Math.floor(uData.xp || 0)}/${job.reqXp}`;
+  document.getElementById('xpBar').style.width = `${Math.min(100, ((uData.xp || 0)/job.reqXp)*100)}%`;
+  document.getElementById('tune-level').innerText = uData.tuning || 1;
+
+  const hasZeroTrace = (uData.blackMarket?.ownedGear || []).includes('bo3');
+  document.getElementById('launderTax').innerText = hasZeroTrace ? '15%' : '22%';
+
+  renderJobs(); renderStocks(); renderBusiness(); renderRealEstate(); renderCars(); renderFarm(); renderGold(); renderChart(); renderExport(); renderMissions(); renderBlackMarket(); renderGames();
+}
+
+function listenChat() { if(chatUnsub) chatUnsub(); const q = query(collection(db, "chat"), orderBy("time", "desc"), limit(50)); chatUnsub = onSnapshot(q, (snap) => { const chatBox = document.getElementById('chatBox'); if(!chatBox) return; chatBox.innerHTML = ''; snap.forEach(doc => { const c = doc.data(); chatBox.innerHTML += `<div style="margin-bottom:5px;"><strong style="color:#38bdf8;">${c.user}:</strong> <span style="color:#cbd5e1;">${c.text}</span></div>`; }); chatBox.scrollTop = chatBox.scrollHeight; }); }
+window.sendChat = async () => { const input = document.getElementById('chatInput'); const text = input.value.trim(); if(!text) return; await addDoc(collection(db, "chat"), { user: uData.username, text, time: Date.now() }); input.value = ''; };
+window.dropCash = async () => { if(uData.cash < 10000) return showToast("تحتاج 10,000$!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-10000) }); await addDoc(collection(db, "chat"), { user: "النظام", text: `${uData.username} وزع 10,000$! 💸`, time: Date.now() }); showToast("تم التوزيع!"); };
+
+window.doWork = async () => { if(!uData || workCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; workCd = true; const btn = document.getElementById('btnWork'); const timerEl = document.getElementById('workTimer'); btn.disabled = true; let timeLeft = 3; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; workCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay), xp: increment(job.xp), "missions.work": increment(1) }); showToast(`نجاح!`); };
+window.doExtraWork = async () => { if(!uData || extraCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; extraCd = true; const btn = document.getElementById('btnExtra'); const timerEl = document.getElementById('extraTimer'); btn.disabled = true; let timeLeft = 20; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; extraCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay * 3), xp: increment(job.xp * 2), "missions.work": increment(1) }); showToast(`🔥 نوبة ناجحة!`); };
+
+window.depositBank = async () => { const amount = parseInt(document.getElementById('bankAmount').value); if(!amount || amount <= 0) return showToast("أدخل مبلغ"); if(uData.cash < amount) return showToast("الكاش لا يكفي"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-amount), bank: increment(amount) }); showToast(`تم إيداع`); document.getElementById('bankAmount').value = ''; };
+window.withdrawBank = async () => { const amount = parseInt(document.getElementById('bankAmount').value); if(!amount || amount <= 0) return showToast("أدخل مبلغ"); if(uData.bank < amount) return showToast("البنك لا يكفي"); await updateDoc(doc(db, "users", user.uid), { cash: increment(amount), bank: increment(-amount) }); showToast(`تم سحب`); document.getElementById('bankAmount').value = ''; };
+window.transferMoney = async () => { const targetUser = document.getElementById('transferUser').value.trim(); const amount = parseInt(document.getElementById('transferAmount').value); if(!targetUser || !amount || amount <= 0) return showToast("أدخل البيانات"); if(uData.cash < amount) return showToast("رصيدك لا يكفي"); const q = query(collection(db, "users"), where("username", "==", targetUser)); const snap = await getDocs(q); if(snap.empty) return showToast("المستخدم غير موجود!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-amount) }); await updateDoc(doc(db, "users", snap.docs[0].id), { cash: increment(amount) }); showToast(`تم التحويل!`); };
+
+function renderJobs() { const list = document.getElementById('jobsList'); if(!list) return; list.innerHTML = ''; JOBS.forEach(j => { const isCur = uData.currentJobId === j.id; const can = (uData.xp || 0) >= j.reqXp; list.innerHTML += `<div class="project-card"><div style="display:flex;justify-content:space-between;"><strong>${j.name}</strong><span style="color:#fbbf24;">$${j.pay}</span></div><div style="font-size:10px;color:#94a3b8;">XP: ${j.reqXp}</div><button class="full ${isCur?'purple':'green'}" style="margin-top:8px;padding:6px;" onclick="changeJob(${j.id})" ${isCur || !can ? 'disabled' : ''}>${isCur ? 'أنت هنا' : (can ? 'تعيين' : 'مستوى غير كافي')}</button></div>`; }); }
+window.changeJob = async (id) => { await updateDoc(doc(db, "users", user.uid), { currentJobId: id }); showToast("تم التغيير!"); };
+
+function renderChart() { if(!chartInstance) { const ctx = document.getElementById('stockChart').getContext('2d'); chartInstance = new Chart(ctx, { type: 'line', data: { labels: currentMarketStocks[0].history.map((_, i) => i), datasets: currentMarketStocks.map((s, i) => ({ label: s.name, data: s.history, borderColor: ['#38bdf8', '#fbbf24', '#10b981', '#a78bfa', '#ef4444', '#fb923c', '#2dd4bf', '#f472b6', '#94a3b8', '#818cf8', '#34d399', '#f87171', '#facc15', '#a3e635', '#e879f9'][i], tension: 0.4, borderWidth: 2, pointRadius: 0 })) }, options: { responsive: true, plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { display: true, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } } } } }); } else { chartInstance.data.datasets.forEach((ds, i) => { ds.data = currentMarketStocks[i].history; }); chartInstance.update(); } }
+function renderStocks() { const list = document.getElementById('stocksList'); if(!list) return; list.innerHTML = ''; currentMarketStocks.forEach(s => { const owned = uData.stocks?.[s.sym] || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${s.name}</span><span class="stat-value gold">$${s.price.toFixed(2)}</span></div><div class="project-stats">تملك: ${owned}</div><div class="keypad"><button onclick="adjustInput('buy_${s.sym}', -1)" class="red">-</button><input type="number" id="buy_${s.sym}" value="1" readonly><button onclick="adjustInput('buy_${s.sym}', 1)" class="green">+</button></div><div class="row"><button class="green" onclick="buyStock('${s.sym}', ${s.price})">شراء</button><button class="red" onclick="sellStock('${s.sym}', ${s.price})">بيع</button></div></div>`; }); }
+window.buyStock = async (sym, price) => { const qty = parseInt(document.getElementById(`buy_${sym}`).value); const cost = price * qty; if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); let owned = (uData.stocks && uData.stocks[sym]) || 0; await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`stocks.${sym}`]: owned + qty, "missions.stocks": increment(qty) }); showToast(`تم شراء`); };
+window.sellStock = async (sym, price) => { const qty = parseInt(document.getElementById(`buy_${sym}`).value); let owned = (uData.stocks && uData.stocks[sym]) || 0; if(owned < qty) return showToast("لا تملك!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(price * qty), [`stocks.${sym}`]: owned - qty }); showToast(`تم بيع`); };
+
+setInterval(() => { marketTimer--; const timerEl = document.getElementById('marketTimer'); if(timerEl) timerEl.innerText = `${marketTimer}s`; if(marketTimer <= 0) { marketTimer = 30; currentMarketStocks = currentMarketStocks.map(s => { const change = (Math.random() - 0.5) * 0.15; const newPrice = Math.max(1, s.price * (1 + change)); s.history.push(newPrice); if(s.history.length > 20) s.history.shift(); return { ...s, price: newPrice }; }); currentGoldPrice = Math.max(10, currentGoldPrice * (1 + ((Math.random() - 0.5) * 0.1))); if(uData) { renderStocks(); renderChart(); renderGold(); } } }, 1000);
+
+function renderGold() { document.getElementById('goldPrice').innerText = `$${currentGoldPrice.toFixed(2)}`; document.getElementById('goldOwned').innerText = uData.gold || 0; }
+window.buyGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); const cost = currentGoldPrice * qty; if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), gold: increment(qty) }); showToast(`تم الشراء`); };
+window.sellGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); if((uData.gold || 0) < qty) return showToast("لا تملك!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(currentGoldPrice * qty), gold: increment(-qty) }); showToast(`تم البيع`); };
+
+function renderBusiness() { const list = document.getElementById('businessList'); if(!list) return; list.innerHTML = ''; PROJECTS.forEach(p => { const owned = uData.projects?.[p.id]?.level || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${p.name}</span><span class="stat-value green">+$${p.income}/s</span></div><div class="project-stats">التكلفة: $${p.cost.toLocaleString('en-US')} | Lvl: ${owned}</div><button class="full green" onclick="buyProject('${p.id}', ${p.cost})">شراء/ترقية</button></div>`; }); }
+window.buyProject = async (id, cost) => { const currentLevel = uData.projects?.[id]?.level || 0; const actualCost = cost + (currentLevel * cost * 0.5); if(uData.cash < actualCost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-actualCost), [`projects.${id}.level`]: increment(1) }); showToast("تم الشراء!"); };
+function renderRealEstate() { const list = document.getElementById('realestateList'); if(!list) return; list.innerHTML = ''; REAL_ESTATE.forEach(r => { const owned = uData.properties?.[r.id] || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${r.name}</span><span class="stat-value green">+$${r.income}/h</span></div><div class="project-stats">التكلفة: $${r.cost.toLocaleString('en-US')} | تملك: ${owned}</div><button class="full green" onclick="buyProperty('${r.id}', ${r.cost})">شراء</button></div>`; }); }
+window.buyProperty = async (id, cost) => { if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`properties.${id}`]: increment(1) }); showToast("تم الشراء!"); };
+function renderCars() { const list = document.getElementById('newCarsList'); if(!list) return; list.innerHTML = ''; NEW_CARS.forEach(c => { const owned = uData.cars.includes(c.id); list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${c.name}</span><span class="stat-value gold">$${c.cost.toLocaleString('en-US')}</span></div><button class="full ${owned?'purple':'green'}" onclick="buyCar('${c.id}', ${c.cost})" ${owned?'disabled':''}>${owned?'مُملوكة':'شراء'}</button></div>`; }); }
+window.buyCar = async (id, cost) => { if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), cars: [...uData.cars, id] }); showToast("تم الشراء!"); };
+
+function renderFarm() { const list = document.getElementById('farmList'); if(!list) return; list.innerHTML = ''; CROPS.forEach(c => { const activeCrop = (uData.farm || []).find(f => f.id === c.id); if (activeCrop) { const rem = activeCrop.endTime - Date.now(); if (rem <= 0) { list.innerHTML += `<div class="project-card" style="border-color:#10b981;"><div class="project-header"><span class="project-title">${c.name} (جاهز)</span></div><button class="green full" onclick="harvestCrop('${c.id}', ${c.sell})">حصاد بـ $${c.sell}</button></div>`; } else { const total = c.time * 1000; const progress = Math.max(0, Math.min(100, ((total - rem) / total) * 100)); const m = Math.floor(rem / 60000); const s = Math.floor((rem % 60000) / 1000); list.innerHTML += `<div class="project-card" style="border-color:#38bdf8;"><div class="project-header"><span class="project-title">${c.name} (بينمو)</span></div><div class="countdown-box"><div class="countdown-text">متبقي: ${m}د ${s}ث</div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%;"></div></div></div></div>`; } } else { list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${c.name}</span><span class="stat-value green">ربح: $${c.sell}</span></div><div class="project-stats">التكلفة: $${c.cost}</div><button class="full green" onclick="plantCrop('${c.id}', ${c.cost})">زرع</button></div>`; } }); }
+window.plantCrop = async (id, cost) => { if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); const crop = CROPS.find(x => x.id === id); const endTime = Date.now() + (crop.time * 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), farm: [...(uData.farm || []), { id: crop.id, name: crop.name, sell: crop.sell, endTime }] }); showToast("تم الزرع!"); };
+window.harvestCrop = async (id, sell) => { let farm = [...uData.farm]; farm = farm.filter(f => f.id !== id); await updateDoc(doc(db, "users", user.uid), { cash: increment(sell), farm, "missions.farm": increment(1) }); showToast(`تم الحصاد!`); };
+
+function renderExport() { const list = document.getElementById('exportCompaniesList'); if(!list || !uData.export) return; list.innerHTML = ''; document.getElementById('expTotalProfit').innerText = `$${(uData.export.totalProfit || 0).toLocaleString('en-US')}`; document.getElementById('expCompleted').innerText = uData.export.completed || 0; const activeCount = (uData.export.shipments || []).length; document.getElementById('expWarehouse').innerText = `${activeCount}/50`; document.getElementById('expWarehouse').style.color = activeCount >= 50 ? '#ef4444' : '#fbbf24'; EXPORT_GOODS.forEach(g => { const activeShipment = (uData.export.shipments || []).find(s => s.id === g.id); if (activeShipment) { const rem = activeShipment.endTime - Date.now(); if (rem <= 0) { list.innerHTML += `<div class="project-card" style="border-color:#10b981;"><div class="project-header"><span class="project-title">${g.icon} ${g.n} (جاهزة)</span></div><button class="green full" onclick="sellExportGoods('${g.id}')">بيع بـ $${activeShipment.sellPrice.toLocaleString('en-US')}</button></div>`; } else { const total = g.t * 60000; const progress = Math.max(0, Math.min(100, ((total - rem) / total) * 100)); const h = Math.floor(rem / 3600000); const m = Math.floor((rem % 3600000) / 60000); const s = Math.floor((rem % 60000) / 1000); list.innerHTML += `<div class="project-card" style="border-color:#fbbf24;"><div class="project-header"><span class="project-title">${g.icon} ${g.n}</span></div><div class="project-stats" style="color:#38bdf8;">العميل: ${g.company}</div><div class="countdown-box"><div class="countdown-text" style="color:#fbbf24;">متبقي: ${h > 0 ? h + 'س ' : ''}${m}د ${s}ث</div><div class="progress-bar"><div class="progress-fill" style="width:${progress}%; background:#fbbf24;"></div></div></div></div>`; } } else { list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${g.icon} ${g.n}</span></div><div class="project-stats">شراء: $${g.c.toLocaleString('en-US')}<br>بيع: $${g.sMin.toLocaleString('en-US')} إلى $${g.sMax.toLocaleString('en-US')}<br>وقت: ${g.t >= 60 ? (g.t/60) + ' ساعة' : g.t + ' دقيقة'}</div><button class="full green" onclick="importGoods('${g.id}')" ${activeCount >= 50 ? 'disabled' : ''}>${activeCount >= 50 ? 'ممتلئ' : 'تعاقد واستيراد'}</button></div>`; } }); }
+window.importGoods = async (id) => { const good = EXPORT_GOODS.find(g => g.id === id); if(!good) return; if(uData.cash < good.c) return showToast("فلوسك مش كفاية!"); if((uData.export.shipments || []).length >= 50) return showToast("المستودع ممتلئ!"); const sellPrice = Math.floor(good.sMin + Math.random() * (good.sMax - good.sMin)); const endTime = Date.now() + (good.t * 60000); await updateDoc(doc(db, "users", user.uid), { cash: increment(-good.c), "export.shipments": [...(uData.export.shipments || []), { id: good.id, name: good.n, cost: good.c, sellPrice, endTime }] }); showToast("تم التعاقد!"); };
+window.sellExportGoods = async (id) => { let shipments = [...uData.export.shipments]; let s = shipments.find(x => x.id === id); shipments = shipments.filter(x => x.id !== id); const profit = s.sellPrice - s.cost; await updateDoc(doc(db, "users", user.uid), { cash: increment(s.sellPrice), "export.shipments": shipments, "export.completed": increment(1), "export.totalProfit": increment(profit), "missions.export": increment(1) }); showToast(`تم البيع!`); };
+setInterval(() => { if(uData) { renderExport(); renderFarm(); } }, 1000);
+
+function renderMissions() { const list = document.getElementById('missionsList'); if(!list) return; list.innerHTML = ''; MISSIONS.forEach(m => { const progress = uData.missions?.[m.type] || 0; const isDone = progress >= m.target; list.innerHTML += `<div class="project-card" style="${isDone ? 'border-color:#10b981;' : ''}"><div class="project-header"><span class="project-title">${m.text}</span><span style="color:#fbbf24;">$${m.reward}</span></div><div class="project-stats">التقدم: ${Math.min(progress, m.target)} / ${m.target}</div><button class="full ${isDone ? 'green' : 'purple'}" onclick="claimMission('${m.id}', ${m.reward}, '${m.type}', ${m.target})" ${!isDone ? 'disabled' : ''}>${isDone ? 'استلام' : 'غير مكتمل'}</button></div>`; }); }
+window.claimMission = async (id, reward, type, target) => { if((uData.missions?.[type] || 0) < target) return showToast("لم تكتمل!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(reward), [`missions.${type}`]: increment(-target) }); showToast(`تم الاستلام!`); };
+
+window.startRace = async (type, betAmount) => { if(uData.cash < betAmount) return showToast("فلوسك مش كفاية للرهان!"); const res = document.getElementById('racingResult'); res.innerHTML = 'جاري السباق...'; await updateDoc(doc(db, "users", user.uid), { cash: increment(-betAmount) }); setTimeout(async () => { if(Math.random() > 0.4) { const win = betAmount * 2; await updateDoc(doc(db, "users", user.uid), { cash: increment(win) }); res.innerHTML = `<span style="color:#10b981;">🏆 فزت بالسباق! +$${win}</span>`; } else { res.innerHTML = `<span style="color:#ef4444;">💥 خسرت السباق.</span>`; } }, 2000); };
+window.upgradeTuning = async () => { if(uData.cash < 10000) return showToast("تحتاج 10,000$"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-10000), tuning: increment(1) }); showToast("تم الترقية!"); };
+
+function renderGames() { const list = document.getElementById('gamesList'); if(!list) return; list.innerHTML = ''; GAMES.forEach(g => { list.innerHTML += `<div class="game-box"><div class="title">${g.icon} ${g.name}</div><input type="number" id="bet_${g.id}" placeholder="المبلغ" value="100"><button class="purple" onclick="playGame('${g.id}')" id="btn_${g.id}">العب</button></div>`; }); }
+window.playGame = async (id) => {
+  if(gameCooldown) return showToast("استنى ثانية واحدة!");
+  const game = GAMES.find(g => g.id === id); const bet = parseInt(document.getElementById(`bet_${id}`).value);
+  if(!bet || bet <= 0) return showToast("أدخل مبلغ صحيح"); if(uData.cash < bet) return showToast("فلوسك مش كفاية!");
+  
+  gameCooldown = true; document.querySelectorAll('.game-box button').forEach(b => b.disabled = true);
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-bet), "missions.games": increment(1) });
+  
+  const res = document.getElementById(`btn_${id}`);
+  res.innerHTML = '...';
+  
+  setTimeout(async () => {
+    if(Math.random() < game.chance) { const win = Math.floor(bet * game.mult); await updateDoc(doc(db, "users", user.uid), { cash: increment(win) }); showToast(`🎉 كسبت $${win}!`); }
+    else showToast(`خسرت $${bet}`);
+    setTimeout(() => { gameCooldown = false; document.querySelectorAll('.game-box button').forEach(b => b.disabled = false); res.innerHTML = 'العب'; }, 1000);
+  }, 800);
+};
+
+function renderBlackMarket() {
+  if(!uData.blackMarket) return;
+  document.getElementById('bmReputation').innerText = uData.blackMarket.reputation || 100;
+  document.getElementById('bmHeat').innerText = uData.blackMarket.heat || 0;
+  document.getElementById('bmTradesLeft').innerText = `${15 - (uData.blackMarket.tradesToday || 0)} / 15`;
+
+  const gearList = document.getElementById('blackOpsList'); gearList.innerHTML = '';
+  BLACK_OPS.forEach(g => {
+    const owned = (uData.blackMarket.ownedGear || []).includes(g.id);
+    gearList.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${g.n}</span><span class="badge ${owned?'easy':'hard'}">${owned?'مفعل':'غير مفعل'}</span></div><div class="project-stats">${g.d}</div><div style="display:flex; justify-content:space-between; align-items:center;"><span style="color:#fbbf24; font-weight:bold;">$${g.c.toLocaleString('en-US')}</span><button class="${owned?'green':'red'}" onclick="buyGear('${g.id}', ${g.c})" ${owned?'disabled':''}>${owned?'مُفعل':'شراء'}</button></div></div>`;
+  });
+
+  const tradesList = document.getElementById('bmTradesList'); tradesList.innerHTML = '';
+  BM_TRADES.forEach(t => {
+    const canTrade = (15 - (uData.blackMarket.tradesToday || 0)) > 0;
+    tradesList.innerHTML += `<div class="bm-trade"><div class="bm-trade-title">${t.n} <span class="badge ${t.lvl === 'easy' ? 'easy' : (t.lvl === 'med' ? 'med' : 'hard')}">${t.lvl}</span></div><div class="bm-trade-details">رأس المال المطلوب: <span>$${t.cap.toLocaleString('en-US')}</span><br>العائد المشبوه (الفوز): <span style="color:#10b981;">+$${t.ret.toLocaleString('en-US')}</span><br>نسبة النجاح: ${t.rate}%<br>فترة التهدئة: ${t.cd} دقيقة<br>عقوبة المداهمة: مصادرة الأموال + ${t.cd*2} دقيقة سجن.</div><button class="red full" onclick="executeTrade('${t.id}')" ${!canTrade ? 'disabled' : ''}>${canTrade ? 'توقيع وتنفيذ العملية' : 'لا يوجد صفقات اليوم'}</button></div>`;
+  });
+}
+window.buyGear = async (id, cost) => { if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), "blackMarket.ownedGear": [...(uData.blackMarket.ownedGear || []), id] }); showToast("تم الشراء!"); };
+window.executeTrade = async (id) => {
+  const trade = BM_TRADES.find(t => t.id === id); if(!trade) return;
+  if(uData.cash < trade.cap) return showToast("فلوسك مش كفاية!"); if((15 - (uData.blackMarket.tradesToday || 0)) <= 0) return showToast("استنفدت صفقات اليوم!");
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-trade.cap), "blackMarket.tradesToday": increment(1) });
+  if (Math.random() * 100 <= trade.rate) { const profit = Math.floor(trade.ret + Math.random() * (trade.ret * 0.2)); await updateDoc(doc(db, "users", user.uid), { dirtyCash: increment(profit) }); showToast(`نجحت! +$${profit}`); }
+  else { await updateDoc(doc(db, "users", user.uid), { "blackMarket.heat": increment(25), "blackMarket.reputation": increment(-trade.rate/2) }); showToast(`فشلت!`); }
+};
+window.bribePolice = async () => { if(uData.cash < 5000) return showToast("تحتاج 5000$!"); const discount = (uData.blackMarket.ownedGear || []).includes('bo4') ? 0.82 : 1; const cost = 5000 * discount; await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), "blackMarket.heat": 0 }); showToast("تم إسقاط الملاحقة!"); };
+window.setLaunderAmount = (ratio) => { document.getElementById('launderAmount').value = Math.floor((uData.dirtyCash || 0) * ratio); };
+window.launderMoney = async () => {
+  const amount = parseInt(document.getElementById('launderAmount').value); if(!amount || amount <= 0) return showToast("أدخل مبلغ"); if((uData.dirtyCash || 0) < amount) return showToast("الأموال القذرة لا تكفي!");
+  const hasZeroTrace = (uData.blackMarket.ownedGear || []).includes('bo3'); const taxRate = hasZeroTrace ? 0.15 : 0.22; const cleanAmount = Math.floor(amount * (1 - taxRate));
+  await updateDoc(doc(db, "users", user.uid), { dirtyCash: increment(-amount), bank: increment(cleanAmount) }); showToast(`تم غسل وتحويل $${cleanAmount} للبنك.`);
+};
+window.redeemCode = async () => { const code = document.getElementById('codeInput').value.trim(); if(!code) return; showToast("كود غير صالح."); };
+
+setInterval(() => { if(uData) { let projInc = 0; for(let p in uData.projects) { const proj = PROJECTS.find(x => x.id === p); if(proj) projInc += (uData.projects[p].level || 0) * proj.income; } let propInc = 0; for(let p in uData.properties) { const prop = REAL_ESTATE.find(x => x.id === p); if(prop) propInc += (uData.properties[p] || 0) * prop.income; } const totalInc = (projInc + propInc) / 360; if(totalInc > 0) updateDoc(doc(db, "users", user.uid), { cash: increment(totalInc) }); } }, 10000);
+</script>
+</body>
+</html>
