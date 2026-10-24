@@ -152,7 +152,6 @@
       <button onclick="doExtraWork()" id="btnExtra" class="full purple" style="display:flex; justify-content:space-between; align-items:center; padding:15px; margin-top:10px;"><span>🔥 نوبة إضافية (x3)</span><span id="extraTimer" style="font-size:11px;">جاهز</span></button>
     </div>
 
-    <!-- الوردية 12 ساعة -->
     <div class="card" style="border-color:#fbbf24; box-shadow: 0 0 15px rgba(251, 191, 36, 0.2);">
       <h3>⏱️ الوردية اليومية (12 ساعة)</h3>
       <p style="font-size:12px; color:#94a3b8; margin-bottom:10px;">اعمل بجد لمدة 12 ساعة متواصلة للحصول على مكافأة ضخمة (أرباح مضاعفة + نقاط خبرة).</p>
@@ -181,7 +180,6 @@
 
   <div class="tab-content" id="tab-jobs"><div class="card"><h3>💼 الوظائف</h3><div id="jobsList"></div></div></div>
 
-  <!-- تعديل الاستثمار الشامل -->
   <div class="tab-content" id="tab-invest">
     <div class="card">
       <h3>📊 سوق الأسهم المباشر</h3>
@@ -207,7 +205,6 @@
     <div class="card"><h3>💸 فشخرة</h3><button class="gold full" onclick="dropCash()">وزع 10,000$ على 5 لاعبين</button></div>
   </div>
 
-  <!-- تعديل المشاريع الشامل -->
   <div class="tab-content" id="tab-business">
     <div class="card">
       <h3>🏭 إمبراطورية الأعمال</h3>
@@ -311,6 +308,40 @@
 
 </div>
 
+<!-- 👇 كشف حساب فترة الغياب 👇 -->
+<div id="absenceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; justify-content:center; align-items:center;">
+    <div class="card" style="width:90%; max-width:400px; border-color:#10b981; box-shadow:0 0 30px rgba(16,185,129,0.3); padding:20px;">
+        <div style="text-align:center; margin-bottom:20px;">
+            <h3 style="color:#10b981; font-size:20px;">📊 كشف حساب فترة الغياب</h3>
+            <p id="absenceDuration" style="font-size:13px; color:#94a3b8; margin-top:5px;">غياب 0 ساعة</p>
+        </div>
+        
+        <div class="row" style="margin-bottom:15px;">
+            <div style="background:#064e3b; border:1px solid #10b981; border-radius:10px; padding:15px; text-align:center;">
+                <span style="font-size:11px; color:#10b981; display:block; margin-bottom:5px;">إجمالي الإيراد</span>
+                <strong id="absenceGross" style="color:#10b981; font-size:16px;">+$0</strong>
+            </div>
+            <div style="background:#450a0a; border:1px solid #ef4444; border-radius:10px; padding:15px; text-align:center;">
+                <span style="font-size:11px; color:#ef4444; display:block; margin-bottom:5px;">إجمالي الخصم</span>
+                <strong id="absenceExpenses" style="color:#ef4444; font-size:16px;">-$0</strong>
+            </div>
+        </div>
+
+        <div style="background:#0b1120; border:1px solid #fbbf24; border-radius:10px; padding:15px; text-align:center; margin-bottom:20px;">
+            <span style="font-size:11px; color:#fbbf24; display:block; margin-bottom:5px;">الصافي المودع في البنك</span>
+            <strong id="absenceNet" style="color:#fbbf24; font-size:22px;">+$0</strong>
+        </div>
+
+        <div style="font-size:12px; color:#94a3b8; margin-bottom:20px; line-height:1.8; background:#0b1120; padding:10px; border-radius:8px;">
+            <p>💡 <strong>تفاصيل الإيرادات:</strong> الأرباح التلقائية للمشاريع والعقارات.</p>
+            <p>💡 <strong>تفاصيل الخصومات:</strong> رواتب العمال والمصاريف التشغيلية (10%).</p>
+            <p>💡 <strong>حالة المشاريع:</strong> تعمل بكامل طاقتها.</p>
+        </div>
+
+        <button onclick="closeAbsenceModal()" class="green full" style="padding:15px; font-size:16px;">استلام الأرباح والعودة للعبة</button>
+    </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -364,6 +395,7 @@ let user = null; let uData = null; let unsub = null; let chatUnsub = null;
 let workCd = false; let extraCd = false;
 let currentMarketStocks = JSON.parse(JSON.stringify(STOCKS));
 let chartInstance = null; let currentGoldPrice = 60; let marketTimer = 30; let gameCooldown = false;
+let absenceChecked = false; // متغير عشان نمنع تكرار كشف الحساب
 
 window.toggleAuth = (mode) => { document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none'; document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none'; document.getElementById('auth-msg').style.display = 'none'; };
 function showAuthMsg(t, isErr=true) { const el = document.getElementById('auth-msg'); el.innerText = t; el.className = isErr ? 'msg-error' : 'msg-success'; el.style.display = 'block'; }
@@ -379,7 +411,7 @@ window.doRegister = async () => {
       stocks: {}, properties: {}, projects: {}, gold: 0, cars: [], farm: [], 
       missions: {}, blackMarket: { reputation: 100, heat: 0, tradesToday: 0, ownedGear: [] },
       export: { totalProfit: 0, completed: 0, shipments: [] }, corporations: [], gang: null, unlockedCodes: [], tuning: 1,
-      lastShift: 0
+      lastShift: 0, lastLogin: Date.now() // 👈 إضافة وقت الدخول
     });
   } catch(e) { showAuthMsg("خطأ: " + (e.code === 'auth/email-already-in-use' ? "الإيميل مستخدم" : e.message)); }
 };
@@ -392,13 +424,30 @@ window.doLogin = async () => {
     await signInWithEmailAndPassword(auth, snap.docs[0].data().email, pw);
   } catch(e) { showAuthMsg("كلمة المرور خاطئة"); }
 };
-window.doLogout = () => signOut(auth);
+window.doLogout = async () => {
+  if(user) {
+    await updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() }); // تحديث وقت الخروج
+  }
+  signOut(auth);
+};
 
 onAuthStateChanged(auth, (usr) => {
   if(usr) {
     user = usr; document.getElementById('auth-screen').style.display = 'none'; document.getElementById('app').style.display = 'block';
     if(unsub) unsub();
-    unsub = onSnapshot(doc(db, "users", usr.uid), (d) => { if(d.exists()) { uData = d.data(); document.getElementById('usernameDisplay').innerText = uData.username; updateUI(); } });
+    unsub = onSnapshot(doc(db, "users", usr.uid), (d) => { 
+      if(d.exists()) { 
+        uData = d.data(); 
+        document.getElementById('usernameDisplay').innerText = uData.username; 
+        updateUI(); 
+        
+        // 👇 تشغيل كشف الحساب أول ما يدخل
+        if(!absenceChecked) {
+          absenceChecked = true;
+          calculateAbsenceReport();
+        }
+      } 
+    });
     listenChat();
   } else { user = null; uData = null; document.getElementById('auth-screen').style.display = 'block'; document.getElementById('app').style.display = 'none'; }
 });
@@ -411,8 +460,8 @@ window.adjustInput = (id, amount) => { const el = document.getElementById(id); l
 function updateUI() {
   if(!uData) return;
   const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0];
-  document.getElementById('cash').innerText = `$${Math.floor(uData.cash).toLocaleString('en-US')}`;
-  document.getElementById('bank').innerText = `$${Math.floor(uData.bank).toLocaleString('en-US')}`;
+  document.getElementById('cash').innerText = `$${Math.floor(uData.cash || 0).toLocaleString('en-US')}`;
+  document.getElementById('bank').innerText = `$${Math.floor(uData.bank || 0).toLocaleString('en-US')}`;
   document.getElementById('dirtyCash').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
   document.getElementById('bmDirtyCash').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
   document.getElementById('bmDirtyCash2').innerText = `$${Math.floor(uData.dirtyCash || 0).toLocaleString('en-US')}`;
@@ -425,10 +474,10 @@ function updateUI() {
   let carsVal = 0; uData.cars.forEach(c => { carsVal += NEW_CARS.find(x=>x.id===c)?.cost || 0; });
   let projVal = 0; for(let p in uData.projects) { projVal += (uData.projects[p].level || 0) * (PROJECTS.find(x=>x.id===p)?.baseCost || 0); }
   
-  let net = uData.cash + uData.bank + stocksVal + goldVal + propsVal + carsVal + projVal;
+  let net = (uData.cash || 0) + (uData.bank || 0) + stocksVal + goldVal + propsVal + carsVal + projVal;
   document.getElementById('netWorth').innerText = `$${Math.floor(net).toLocaleString('en-US')}`;
   document.getElementById('wealthTotal').innerText = `$${Math.floor(net).toLocaleString('en-US')}`;
-  document.getElementById('w-cash').innerText = `$${Math.floor(uData.cash + uData.bank).toLocaleString('en-US')}`;
+  document.getElementById('w-cash').innerText = `$${Math.floor((uData.cash || 0) + (uData.bank || 0)).toLocaleString('en-US')}`;
   document.getElementById('w-stocks').innerText = `$${Math.floor(stocksVal + goldVal).toLocaleString('en-US')}`;
   document.getElementById('w-props').innerText = `$${Math.floor(propsVal + carsVal).toLocaleString('en-US')}`;
   document.getElementById('w-factory').innerText = `$${Math.floor(projVal).toLocaleString('en-US')}`;
@@ -443,6 +492,77 @@ function updateUI() {
   updateShiftTimer();
 }
 
+// 👇 دالة كشف حساب الغياب 👇
+async function calculateAbsenceReport() {
+    if(!uData) return;
+    
+    const now = Date.now();
+    const lastLogin = uData.lastLogin || now;
+    
+    // لو اللاعب غاب أقل من 5 دقايق، متظهرش الشاشة
+    if (now - lastLogin < 5 * 60 * 1000) {
+        await updateDoc(doc(db, "users", user.uid), { lastLogin: now });
+        return;
+    }
+
+    const hoursAway = (now - lastLogin) / 3600000;
+    const effectiveHours = Math.min(hoursAway, 12); // بحد أقصى 12 ساعة
+
+    // حساب الإيرادات
+    let incomePerHour = 0;
+    
+    // المشاريع
+    for(let p in uData.projects) {
+        const proj = PROJECTS.find(x => x.id === p);
+        if(proj) {
+            const level = uData.projects[p].level || 0;
+            const workers = uData.projects[p].workers || 0;
+            const baseIncome = proj.baseIncome || 0;
+            
+            // دخل المشروع = (المستوى * الدخل الأساسي) + (العمال * تكلفة العامل)
+            const projectIncome = (level * baseIncome * 10) + (workers * proj.workerCost * 2);
+            incomePerHour += projectIncome;
+        }
+    }
+    
+    // العقارات
+    for(let p in uData.properties) {
+        const prop = REAL_ESTATE.find(x => x.id === p);
+        if(prop) incomePerHour += (uData.properties[p] || 0) * prop.income;
+    }
+
+    const grossIncome = incomePerHour * effectiveHours;
+    const expenses = grossIncome * 0.10; // 10% مصاريف تشغيل ورواتب
+    const netIncome = grossIncome - expenses;
+
+    // عرض الشاشة لو فيه أرباح
+    if (grossIncome > 0) {
+        document.getElementById('absenceDuration').innerText = `غياب لمدة ${hoursAway.toFixed(1)} ساعة`;
+        document.getElementById('absenceGross').innerText = `+$${Math.floor(grossIncome).toLocaleString()}`;
+        document.getElementById('absenceExpenses').innerText = `-$${Math.floor(expenses).toLocaleString()}`;
+        document.getElementById('absenceNet').innerText = `+$${Math.floor(netIncome).toLocaleString()}`;
+        
+        document.getElementById('absenceModal').style.display = 'flex';
+    }
+
+    // تحديث الداتابيز (إضافة الفلوس للبنك + تحديث وقت الدخول)
+    await updateDoc(doc(db, "users", user.uid), {
+        lastLogin: now,
+        bank: increment(netIncome)
+    });
+}
+
+window.closeAbsenceModal = () => {
+    document.getElementById('absenceModal').style.display = 'none';
+};
+
+// تحديث وقت الدخول كل دقيقة عشان منحسبش وقت وهو فاتح اللعبة
+setInterval(() => {
+    if(user && uData) {
+        updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() });
+    }
+}, 60000);
+
 function listenChat() { if(chatUnsub) chatUnsub(); const q = query(collection(db, "chat"), orderBy("time", "desc"), limit(50)); chatUnsub = onSnapshot(q, (snap) => { const chatBox = document.getElementById('chatBox'); if(!chatBox) return; chatBox.innerHTML = ''; snap.forEach(doc => { const c = doc.data(); chatBox.innerHTML += `<div style="margin-bottom:5px;"><strong style="color:#38bdf8;">${c.user}:</strong> <span style="color:#cbd5e1;">${c.text}</span></div>`; }); chatBox.scrollTop = chatBox.scrollHeight; }); }
 window.sendChat = async () => { const input = document.getElementById('chatInput'); const text = input.value.trim(); if(!text) return; await addDoc(collection(db, "chat"), { user: uData.username, text, time: Date.now() }); input.value = ''; };
 window.dropCash = async () => { if(uData.cash < 10000) return showToast("تحتاج 10,000$!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-10000) }); await addDoc(collection(db, "chat"), { user: "النظام", text: `${uData.username} وزع 10,000$! 💸`, time: Date.now() }); showToast("تم التوزيع!"); };
@@ -450,7 +570,6 @@ window.dropCash = async () => { if(uData.cash < 10000) return showToast("تحت�
 window.doWork = async () => { if(!uData || workCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; workCd = true; const btn = document.getElementById('btnWork'); const timerEl = document.getElementById('workTimer'); btn.disabled = true; let timeLeft = 3; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; workCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay), xp: increment(job.xp), "missions.work": increment(1) }); showToast(`نجاح!`); };
 window.doExtraWork = async () => { if(!uData || extraCd) return; const job = JOBS.find(j => j.id === uData.currentJobId) || JOBS[0]; extraCd = true; const btn = document.getElementById('btnExtra'); const timerEl = document.getElementById('extraTimer'); btn.disabled = true; let timeLeft = 20; timerEl.innerText = `${timeLeft}s`; const interval = setInterval(() => { timeLeft--; timerEl.innerText = `${timeLeft}s`; if(timeLeft <= 0) { clearInterval(interval); btn.disabled = false; timerEl.innerText = "جاهز"; extraCd = false; } }, 1000); await updateDoc(doc(db, "users", user.uid), { cash: increment(job.pay * 3), xp: increment(job.xp * 2), "missions.work": increment(1) }); showToast(`🔥 نوبة ناجحة!`); };
 
-// Shift Logic
 window.startShift = async () => {
   const now = Date.now(); const lastShift = uData.lastShift || 0; const cooldown = 12 * 60 * 60 * 1000;
   if (now - lastShift < cooldown) return showToast("الوردية مش جاهزة لسه، استنى!");
@@ -494,7 +613,6 @@ function renderStocks() {
     const profit = currentValue - invested;
     const profitPercent = invested > 0 ? (profit / invested) * 100 : 0;
     const commission = currentValue * 0.01;
-    const netCash = currentValue - commission;
     const profitColor = profit >= 0 ? '#10b981' : '#ef4444';
     const profitSign = profit >= 0 ? '+' : '';
     const sparkline = `<svg height="30" width="100" style="display:block; margin:0 auto;"><polyline points="0,15 ${Math.random()*20},${Math.random()*30} ${Math.random()*40},${Math.random()*30} 100,10" fill="none" stroke="${profitColor}" stroke-width="2"/></svg>`;
@@ -581,7 +699,6 @@ window.sellGold = async () => { const qty = parseInt(document.getElementById('go
 
 function renderBusiness() { 
   const list = document.getElementById('businessList'); if(!list) return; list.innerHTML = ''; 
-  
   PROJECTS.forEach(p => { 
     const data = uData.projects?.[p.id] || { level: 0, workers: 0, price: 32 };
     const level = data.level;
@@ -739,7 +856,28 @@ window.launderMoney = async () => {
 };
 window.redeemCode = async () => { const code = document.getElementById('codeInput').value.trim(); if(!code) return; showToast("كود غير صالح."); };
 
-setInterval(() => { if(uData) { let projInc = 0; for(let p in uData.projects) { const proj = PROJECTS.find(x => x.id === p); if(proj) projInc += (uData.projects[p].level || 0) * proj.income; } let propInc = 0; for(let p in uData.properties) { const prop = REAL_ESTATE.find(x => x.id === p); if(prop) propInc += (uData.properties[p] || 0) * prop.income; } const totalInc = (projInc + propInc) / 360; if(totalInc > 0) updateDoc(doc(db, "users", user.uid), { cash: increment(totalInc) }); } }, 10000);
+setInterval(() => { 
+  if(uData) { 
+    let projInc = 0; 
+    for(let p in uData.projects) { 
+      const proj = PROJECTS.find(x => x.id === p); 
+      if(proj) {
+        const level = uData.projects[p].level || 0;
+        const income = proj.baseIncome || 0; 
+        projInc += level * income; 
+      } 
+    } 
+    let propInc = 0; 
+    for(let p in uData.properties) { 
+      const prop = REAL_ESTATE.find(x => x.id === p); 
+      if(prop) propInc += (uData.properties[p] || 0) * (prop.income || 0); 
+    } 
+    const totalInc = (projInc + propInc) / 360; 
+    if(totalInc > 0 && !isNaN(totalInc)) {
+      updateDoc(doc(db, "users", user.uid), { cash: increment(totalInc) }); 
+    }
+  } 
+}, 10000);
 </script>
 </body>
 </html>
