@@ -31,7 +31,7 @@
   button:disabled{background:#1e293b !important; color:#475569 !important; border:1px solid #334155; cursor:not-allowed;}
   button.purple{background:linear-gradient(135deg,#6d28d9,#a78bfa);} button.gold{background:linear-gradient(135deg,#b45309,#fbbf24);color:#fff;}
   button.green{background:linear-gradient(135deg,#047857,#10b981);} button.red{background:linear-gradient(135deg,#991b1b,#ef4444);} button.full{width:100%;}
-  input{background:#0b1120;border:1px solid #334155;color:#f8fafc;padding:10px;border-radius:8px;font-size:14px;width:100%;margin-bottom:10px;text-align:center;font-weight:bold;}
+  input, select{background:#0b1120;border:1px solid #334155;color:#f8fafc;padding:10px;border-radius:8px;font-size:14px;width:100%;margin-bottom:10px;text-align:center;font-weight:bold;}
   .row{display:flex;gap:8px;margin-bottom:8px;} .row > *{flex:1;}
   
   .wealth-item{display:flex; justify-content:space-between; align-items:center; padding:12px; background:rgba(0,0,0,0.4); border-radius:10px; margin-bottom:8px; border-right:3px solid #38bdf8;}
@@ -189,12 +189,7 @@
       
       <div style="margin-top:20px; border-top:1px solid #334155; padding-top:15px;">
         <h3 style="color:#fbbf24;">🪙 تجارة الذهب</h3>
-        <div class="project-card" style="border-color:#fbbf24;">
-          <div class="project-header"><span class="project-title">سعر الجرام</span><span class="stat-value gold" id="goldPrice">$0</span></div>
-          <div class="project-stats">تملك: <span id="goldOwned">0</span> جرام</div>
-          <div class="keypad"><button onclick="adjustInput('goldQty', -1)" class="red">-</button><input type="number" id="goldQty" value="1" readonly><button onclick="adjustInput('goldQty', 1)" class="green">+</button></div>
-          <div class="row"><button class="green" onclick="buyGold()">شراء</button><button class="gold" onclick="sellGold()">بيع</button></div>
-        </div>
+        <div id="goldCard" class="project-card" style="padding:0; overflow:hidden; margin-bottom:20px; border-color:#fbbf24;"></div>
       </div>
     </div>
   </div>
@@ -219,8 +214,31 @@
   <div class="tab-content" id="tab-missions"><div class="card"><h3>📅 المهام اليومية</h3><div id="missionsList"></div></div></div>
   <div class="tab-content" id="tab-codes"><div class="card"><h3>🎁 استرداد الأكواد</h3><input type="text" id="codeInput" placeholder="أدخل الكود..."><button class="purple full" onclick="redeemCode()">استرداد</button></div></div>
 
-  <div class="tab-content" id="tab-corps"><div class="card"><h3>🏢 تأسيس شركة مساهمة</h3><input type="text" id="corpName" placeholder="اسم الشركة"><input type="number" id="corpShares" placeholder="عدد الأسهم" value="1000"><button class="purple full" onclick="createCorp()">تأسيس الشركة</button><div id="corpsList" style="margin-top:15px;"></div></div></div>
-  <div class="tab-content" id="tab-gangs"><div class="card"><h3>👑 تكوين تحالف</h3><input type="text" id="gangName" placeholder="اسم التحالف"><button class="purple full" onclick="createGang()">تأسيس</button><div id="gangsList" style="margin-top:15px;"></div></div></div>
+  <div class="tab-content" id="tab-corps">
+    <div class="card">
+      <h3>🏢 تأسيس شركة مساهمة</h3>
+      <input type="text" id="corpName" placeholder="اسم الشركة (مثال: شركة النور)">
+      <select id="corpType">
+        <option value="tech">شركة تكنولوجيا</option>
+        <option value="realestate">شركة عقارات</option>
+        <option value="food">شركة أغذية</option>
+        <option value="energy">شركة طاقة</option>
+      </select>
+      <input type="number" id="corpCapital" placeholder="رأس المال المطلوب (100,000$)" value="100000">
+      <button class="purple full" onclick="createCorp()">تأسيس وطرح أسهم</button>
+      <div id="corpsList" style="margin-top:15px;"></div>
+    </div>
+  </div>
+  
+  <div class="tab-content" id="tab-gangs">
+    <div class="card">
+      <h3>👑 تكوين تحالف (Gang)</h3>
+      <input type="text" id="gangName" placeholder="اسم التحالف (مثال: عائلة الأشرار)">
+      <input type="text" id="gangSlogan" placeholder="شعار التحالف (مثال: المال والقوة)">
+      <button class="purple full" onclick="createGang()">تأسيس التحالف</button>
+      <div id="gangsList" style="margin-top:15px;"></div>
+    </div>
+  </div>
 
   <div class="tab-content" id="tab-racing">
     <div class="card">
@@ -308,34 +326,31 @@
 
 </div>
 
-<!-- 👇 كشف حساب فترة الغياب 👇 -->
-<div id="absenceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; justify-content:center; align-items:center;">
-    <div class="card" style="width:90%; max-width:400px; border-color:#10b981; box-shadow:0 0 30px rgba(16,185,129,0.3); padding:20px;">
-        <div style="text-align:center; margin-bottom:20px;">
+<!-- كشف حساب فترة الغياب -->
+<div id="absenceModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; justify-content:center; align-items:center; overflow-y:auto; padding:20px 0;">
+    <div class="card" style="width:90%; max-width:400px; border-color:#10b981; box-shadow:0 0 30px rgba(16,185,129,0.3); padding:20px; margin:auto;">
+        <div style="text-align:center; margin-bottom:15px;">
             <h3 style="color:#10b981; font-size:20px;">📊 كشف حساب فترة الغياب</h3>
             <p id="absenceDuration" style="font-size:13px; color:#94a3b8; margin-top:5px;">غياب 0 ساعة</p>
         </div>
         
-        <div class="row" style="margin-bottom:15px;">
-            <div style="background:#064e3b; border:1px solid #10b981; border-radius:10px; padding:15px; text-align:center;">
-                <span style="font-size:11px; color:#10b981; display:block; margin-bottom:5px;">إجمالي الإيراد</span>
-                <strong id="absenceGross" style="color:#10b981; font-size:16px;">+$0</strong>
-            </div>
-            <div style="background:#450a0a; border:1px solid #ef4444; border-radius:10px; padding:15px; text-align:center;">
-                <span style="font-size:11px; color:#ef4444; display:block; margin-bottom:5px;">إجمالي الخصم</span>
-                <strong id="absenceExpenses" style="color:#ef4444; font-size:16px;">-$0</strong>
-            </div>
+        <div style="background:#064e3b; border:1px solid #10b981; border-radius:10px; padding:10px; text-align:center; margin-bottom:10px;">
+            <span style="font-size:11px; color:#10b981; display:block;">إجمالي الإيرادات</span>
+            <strong id="absenceGross" style="color:#10b981; font-size:18px;">+$0</strong>
+        </div>
+
+        <div id="absenceDetails" style="font-size:12px; color:#94a3b8; margin-bottom:15px; background:#0b1120; padding:10px; border-radius:8px; line-height:1.8; max-height: 150px; overflow-y:auto;">
+            <!-- تفاصيل الإيرادات هنا -->
+        </div>
+
+        <div style="background:#450a0a; border:1px solid #ef4444; border-radius:10px; padding:10px; text-align:center; margin-bottom:10px;">
+            <span style="font-size:11px; color:#ef4444; display:block;">إجمالي الخصومات (رواتب + ضرائب)</span>
+            <strong id="absenceExpenses" style="color:#ef4444; font-size:18px;">-$0</strong>
         </div>
 
         <div style="background:#0b1120; border:1px solid #fbbf24; border-radius:10px; padding:15px; text-align:center; margin-bottom:20px;">
             <span style="font-size:11px; color:#fbbf24; display:block; margin-bottom:5px;">الصافي المودع في البنك</span>
             <strong id="absenceNet" style="color:#fbbf24; font-size:22px;">+$0</strong>
-        </div>
-
-        <div style="font-size:12px; color:#94a3b8; margin-bottom:20px; line-height:1.8; background:#0b1120; padding:10px; border-radius:8px;">
-            <p>💡 <strong>تفاصيل الإيرادات:</strong> الأرباح التلقائية للمشاريع والعقارات.</p>
-            <p>💡 <strong>تفاصيل الخصومات:</strong> رواتب العمال والمصاريف التشغيلية (10%).</p>
-            <p>💡 <strong>حالة المشاريع:</strong> تعمل بكامل طاقتها.</p>
         </div>
 
         <button onclick="closeAbsenceModal()" class="green full" style="padding:15px; font-size:16px;">استلام الأرباح والعودة للعبة</button>
@@ -395,7 +410,7 @@ let user = null; let uData = null; let unsub = null; let chatUnsub = null;
 let workCd = false; let extraCd = false;
 let currentMarketStocks = JSON.parse(JSON.stringify(STOCKS));
 let chartInstance = null; let currentGoldPrice = 60; let marketTimer = 30; let gameCooldown = false;
-let absenceChecked = false; // متغير عشان نمنع تكرار كشف الحساب
+let absenceChecked = false;
 
 window.toggleAuth = (mode) => { document.getElementById('login-form').style.display = mode === 'login' ? 'block' : 'none'; document.getElementById('register-form').style.display = mode === 'register' ? 'block' : 'none'; document.getElementById('auth-msg').style.display = 'none'; };
 function showAuthMsg(t, isErr=true) { const el = document.getElementById('auth-msg'); el.innerText = t; el.className = isErr ? 'msg-error' : 'msg-success'; el.style.display = 'block'; }
@@ -411,7 +426,7 @@ window.doRegister = async () => {
       stocks: {}, properties: {}, projects: {}, gold: 0, cars: [], farm: [], 
       missions: {}, blackMarket: { reputation: 100, heat: 0, tradesToday: 0, ownedGear: [] },
       export: { totalProfit: 0, completed: 0, shipments: [] }, corporations: [], gang: null, unlockedCodes: [], tuning: 1,
-      lastShift: 0, lastLogin: Date.now() // 👈 إضافة وقت الدخول
+      lastShift: 0, lastLogin: Date.now()
     });
   } catch(e) { showAuthMsg("خطأ: " + (e.code === 'auth/email-already-in-use' ? "الإيميل مستخدم" : e.message)); }
 };
@@ -425,9 +440,7 @@ window.doLogin = async () => {
   } catch(e) { showAuthMsg("كلمة المرور خاطئة"); }
 };
 window.doLogout = async () => {
-  if(user) {
-    await updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() }); // تحديث وقت الخروج
-  }
+  if(user) await updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() });
   signOut(auth);
 };
 
@@ -440,8 +453,6 @@ onAuthStateChanged(auth, (usr) => {
         uData = d.data(); 
         document.getElementById('usernameDisplay').innerText = uData.username; 
         updateUI(); 
-        
-        // 👇 تشغيل كشف الحساب أول ما يدخل
         if(!absenceChecked) {
           absenceChecked = true;
           calculateAbsenceReport();
@@ -492,76 +503,98 @@ function updateUI() {
   updateShiftTimer();
 }
 
-// 👇 دالة كشف حساب الغياب 👇
 async function calculateAbsenceReport() {
     if(!uData) return;
-    
     const now = Date.now();
-    const lastLogin = uData.lastLogin || now;
+    const lastLogin = uData.lastLogin || (now - 3600000);
+    const hoursAway = (now - lastLogin) / 3600000;
     
-    // لو اللاعب غاب أقل من 5 دقايق، متظهرش الشاشة
-    if (now - lastLogin < 5 * 60 * 1000) {
+    if (hoursAway < 0.016) { 
         await updateDoc(doc(db, "users", user.uid), { lastLogin: now });
         return;
     }
 
-    const hoursAway = (now - lastLogin) / 3600000;
-    const effectiveHours = Math.min(hoursAway, 12); // بحد أقصى 12 ساعة
+    // التحقق من تفعيل الوردية
+    const isShiftActive = (now - (uData.lastShift || 0)) < (12 * 60 * 60 * 1000);
+    if (!isShiftActive) {
+        document.getElementById('absenceDuration').innerText = "عفواً، لم تقم بتفعيل الوردية!";
+        document.getElementById('absenceGross').innerText = `+$0`;
+        document.getElementById('absenceDetails').innerHTML = `<p style="text-align:center; color:#ef4444;">يجب تفعيل الوردية لتجميع الأرباح أثناء غيابك.</p>`;
+        document.getElementById('absenceExpenses').innerHTML = `-$0`;
+        document.getElementById('absenceNet').innerText = `+$0`;
+        document.getElementById('absenceModal').style.display = 'flex';
+        await updateDoc(doc(db, "users", user.uid), { lastLogin: now });
+        return;
+    }
 
-    // حساب الإيرادات
-    let incomePerHour = 0;
+    const effectiveHours = Math.min(hoursAway, 12); 
+    let totalIncome = 0;
+    let incomeDetailsHTML = '';
+    let totalWorkerSalaries = 0;
     
     // المشاريع
     for(let p in uData.projects) {
         const proj = PROJECTS.find(x => x.id === p);
-        if(proj) {
+        if(proj && uData.projects[p].level > 0) {
             const level = uData.projects[p].level || 0;
             const workers = uData.projects[p].workers || 0;
             const baseIncome = proj.baseIncome || 0;
             
-            // دخل المشروع = (المستوى * الدخل الأساسي) + (العمال * تكلفة العامل)
-            const projectIncome = (level * baseIncome * 10) + (workers * proj.workerCost * 2);
-            incomePerHour += projectIncome;
+            const projectHourlyIncome = (level * baseIncome * 10) + (workers * proj.workerCost * 2);
+            const projectTotal = projectHourlyIncome * effectiveHours;
+            const salary = workers * proj.workerCost * effectiveHours;
+            
+            totalIncome += projectTotal;
+            totalWorkerSalaries += salary;
+            
+            if (projectTotal > 0) {
+                incomeDetailsHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px dashed #334155; padding-bottom:2px;"><span>${proj.name} (Lvl ${level}):</span> <span style="color:#10b981;">+$${Math.floor(projectTotal).toLocaleString()}</span></div>`;
+            }
         }
     }
     
     // العقارات
+    let propIncomeTotal = 0;
     for(let p in uData.properties) {
         const prop = REAL_ESTATE.find(x => x.id === p);
-        if(prop) incomePerHour += (uData.properties[p] || 0) * prop.income;
+        if(prop) {
+            const pIncome = (uData.properties[p] || 0) * prop.income * effectiveHours;
+            propIncomeTotal += pIncome;
+            if(pIncome > 0) {
+                incomeDetailsHTML += `<div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px dashed #334155; padding-bottom:2px;"><span>عقار: ${prop.name}:</span> <span style="color:#10b981;">+$${Math.floor(pIncome).toLocaleString()}</span></div>`;
+            }
+        }
     }
+    totalIncome += propIncomeTotal;
 
-    const grossIncome = incomePerHour * effectiveHours;
-    const expenses = grossIncome * 0.10; // 10% مصاريف تشغيل ورواتب
-    const netIncome = grossIncome - expenses;
+    // الضرائب 5%
+    const tax = totalIncome * 0.05;
+    const totalExpenses = totalWorkerSalaries + tax;
+    const netIncome = totalIncome - totalExpenses;
 
-    // عرض الشاشة لو فيه أرباح
-    if (grossIncome > 0) {
+    if (totalIncome > 0 || totalExpenses > 0) {
         document.getElementById('absenceDuration').innerText = `غياب لمدة ${hoursAway.toFixed(1)} ساعة`;
-        document.getElementById('absenceGross').innerText = `+$${Math.floor(grossIncome).toLocaleString()}`;
-        document.getElementById('absenceExpenses').innerText = `-$${Math.floor(expenses).toLocaleString()}`;
+        document.getElementById('absenceGross').innerText = `+$${Math.floor(totalIncome).toLocaleString()}`;
+        document.getElementById('absenceDetails').innerHTML = incomeDetailsHTML || '<p style="text-align:center;">لا توجد تفاصيل إيرادات.</p>';
+        
+        let expHTML = `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>رواتب العمال:</span> <span>-$${Math.floor(totalWorkerSalaries).toLocaleString()}</span></div>`;
+        expHTML += `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>ضرائب (5%):</span> <span>-$${Math.floor(tax).toLocaleString()}</span></div>`;
+        
+        document.getElementById('absenceExpenses').innerHTML = `-$${Math.floor(totalExpenses).toLocaleString()}<br><div style="font-size:10px; margin-top:5px; text-align:right;">${expHTML}</div>`;
         document.getElementById('absenceNet').innerText = `+$${Math.floor(netIncome).toLocaleString()}`;
         
         document.getElementById('absenceModal').style.display = 'flex';
     }
 
-    // تحديث الداتابيز (إضافة الفلوس للبنك + تحديث وقت الدخول)
     await updateDoc(doc(db, "users", user.uid), {
         lastLogin: now,
         bank: increment(netIncome)
     });
 }
 
-window.closeAbsenceModal = () => {
-    document.getElementById('absenceModal').style.display = 'none';
-};
+window.closeAbsenceModal = () => { document.getElementById('absenceModal').style.display = 'none'; };
 
-// تحديث وقت الدخول كل دقيقة عشان منحسبش وقت وهو فاتح اللعبة
-setInterval(() => {
-    if(user && uData) {
-        updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() });
-    }
-}, 60000);
+setInterval(() => { if(user && uData) updateDoc(doc(db, "users", user.uid), { lastLogin: Date.now() }); }, 60000);
 
 function listenChat() { if(chatUnsub) chatUnsub(); const q = query(collection(db, "chat"), orderBy("time", "desc"), limit(50)); chatUnsub = onSnapshot(q, (snap) => { const chatBox = document.getElementById('chatBox'); if(!chatBox) return; chatBox.innerHTML = ''; snap.forEach(doc => { const c = doc.data(); chatBox.innerHTML += `<div style="margin-bottom:5px;"><strong style="color:#38bdf8;">${c.user}:</strong> <span style="color:#cbd5e1;">${c.text}</span></div>`; }); chatBox.scrollTop = chatBox.scrollHeight; }); }
 window.sendChat = async () => { const input = document.getElementById('chatInput'); const text = input.value.trim(); if(!text) return; await addDoc(collection(db, "chat"), { user: uData.username, text, time: Date.now() }); input.value = ''; };
@@ -693,14 +726,94 @@ window.sellAllStock = async (sym, price) => {
 
 setInterval(() => { marketTimer--; const timerEl = document.getElementById('marketTimer'); if(timerEl) timerEl.innerText = `${marketTimer}s`; if(marketTimer <= 0) { marketTimer = 30; currentMarketStocks = currentMarketStocks.map(s => { const change = (Math.random() - 0.5) * 0.15; const newPrice = Math.max(1, s.price * (1 + change)); s.history.push(newPrice); if(s.history.length > 20) s.history.shift(); return { ...s, price: newPrice }; }); currentGoldPrice = Math.max(10, currentGoldPrice * (1 + ((Math.random() - 0.5) * 0.1))); if(uData) { renderStocks(); renderChart(); renderGold(); } } }, 1000);
 
-function renderGold() { document.getElementById('goldPrice').innerText = `$${currentGoldPrice.toFixed(2)}`; document.getElementById('goldOwned').innerText = uData.gold || 0; }
-window.buyGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); const cost = currentGoldPrice * qty; if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), gold: increment(qty) }); showToast(`تم الشراء`); };
-window.sellGold = async () => { const qty = parseInt(document.getElementById('goldQty').value); if((uData.gold || 0) < qty) return showToast("لا تملك!"); await updateDoc(doc(db, "users", user.uid), { cash: increment(currentGoldPrice * qty), gold: increment(-qty) }); showToast(`تم البيع`); };
+function renderGold() { 
+  const goldCard = document.getElementById('goldCard'); if(!goldCard) return;
+  
+  const owned = uData.gold || 0;
+  const avgBuy = uData.gold_avg || currentGoldPrice;
+  const currentValue = owned * currentGoldPrice;
+  const invested = owned * avgBuy;
+  const profit = currentValue - invested;
+  const profitPercent = invested > 0 ? (profit / invested) * 100 : 0;
+  const commission = currentValue * 0.01;
+  const profitColor = profit >= 0 ? '#10b981' : '#ef4444';
+  const profitSign = profit >= 0 ? '+' : '';
+  const sparkline = `<svg height="30" width="100" style="display:block; margin:0 auto;"><polyline points="0,15 ${Math.random()*20},${Math.random()*30} ${Math.random()*40},${Math.random()*30} 100,10" fill="none" stroke="${profitColor}" stroke-width="2"/></svg>`;
+
+  goldCard.innerHTML = `
+    <div style="padding:15px; border-bottom:1px solid #1e293b;">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+         <div><h4 style="color:#fbbf24; font-size:16px;">🪙 جرام الذهب</h4><span style="color:#64748b; font-size:11px;">XAU</span></div>
+         <div style="text-align:left;">
+           <div style="color:#10b981; font-weight:bold; font-size:18px;">EGP ${currentGoldPrice.toFixed(2)}</div>
+           <div style="color:#10b981; font-size:11px;">+2.15%</div>
+         </div>
+      </div>
+      <div style="background:#0b1120; border:1px solid #1e293b; border-radius:8px; padding:10px;">${sparkline}</div>
+    </div>
+    
+    <div style="padding:15px; font-size:12px; line-height:2;">
+      <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>الجرامات المملوكة:</span> <strong style="color:#fff;">${owned} جرام</strong></div>
+      <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>متوسط سعر الشراء:</span> <strong style="color:#fff;">EGP ${avgBuy.toFixed(2)}</strong></div>
+      <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>رأس المال المستثمر:</span> <strong style="color:#fff;">EGP ${invested.toFixed(0)}</strong></div>
+      <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>القيمة السوقية الحالية:</span> <strong style="color:#fbbf24;">EGP ${currentValue.toFixed(0)}</strong></div>
+      <div style="display:flex; justify-content:space-between; color:#94a3b8;"><span>صافي الربح الفعلي:</span> <strong style="color:${profitColor};">${profitSign}${profit.toFixed(0)} EGP (${profitPercent.toFixed(1)}%)</strong></div>
+      <div style="display:flex; justify-content:space-between; color:#94a3b8; font-size:10px; margin-top:5px;"><span>عمولة السمسرة (1%):</span> <span style="color:#ef4444;">- EGP ${commission.toFixed(0)}</span></div>
+    </div>
+
+    <div style="padding:0 15px 15px;">
+      <div class="row" style="margin-bottom:10px;">
+        <button class="purple" onclick="setGoldQty(0.25)">25%</button>
+        <button class="purple" onclick="setGoldQty(0.5)">50%</button>
+        <button class="purple" onclick="setGoldQty(1)">100%</button>
+      </div>
+      <div class="row">
+        <input type="number" id="goldQty" placeholder="الكمية" value="1" style="margin:0;">
+        <button class="green" onclick="buyGold()">شراء الذهب</button>
+        <button class="red" onclick="sellGold()">بيع</button>
+      </div>
+      <button class="gold full" style="margin-top:5px; font-size:11px;" onclick="sellAllGold()">بيع كل الذهب</button>
+    </div>
+  `;
+}
+
+window.setGoldQty = (ratio) => {
+  const owned = uData.gold || 0;
+  if(owned === 0) return;
+  document.getElementById('goldQty').value = Math.floor(owned * ratio);
+};
+
+window.buyGold = async () => { 
+  const qty = parseInt(document.getElementById('goldQty').value); 
+  const cost = currentGoldPrice * qty; 
+  if(uData.cash < cost) return showToast("فلوسك مش كفاية!"); 
+  
+  let owned = uData.gold || 0;
+  let avgBuy = uData.gold_avg || currentGoldPrice;
+  let newAvg = ((owned * avgBuy) + cost) / (owned + qty);
+
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), gold: increment(qty), gold_avg: newAvg }); 
+  showToast(`تم شراء ${qty} جرام ذهب`); 
+};
+window.sellGold = async () => { 
+  const qty = parseInt(document.getElementById('goldQty').value); 
+  if((uData.gold || 0) < qty) return showToast("لا تملك!"); 
+  const gross = currentGoldPrice * qty; const commission = gross * 0.01; const net = gross - commission;
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(net), gold: increment(-qty) }); 
+  showToast(`تم بيع ${qty} جرام (بعد خصم 1%)`); 
+};
+window.sellAllGold = async () => {
+  const owned = uData.gold || 0;
+  if(owned <= 0) return showToast("لا تملك ذهب!");
+  const gross = currentGoldPrice * owned; const commission = gross * 0.01; const net = gross - commission;
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(net), gold: 0, gold_avg: 0 }); 
+  showToast(`تم بيع كل الذهب (بعد خصم 1%)`); 
+};
 
 function renderBusiness() { 
   const list = document.getElementById('businessList'); if(!list) return; list.innerHTML = ''; 
   PROJECTS.forEach(p => { 
-    const data = uData.projects?.[p.id] || { level: 0, workers: 0, price: 32 };
+    const data = uData.projects?.[p.id] || { level: 0, workers: 0, price: 32, adExpiry: 0 };
     const level = data.level;
     
     if(level === 0) {
@@ -716,15 +829,19 @@ function renderBusiness() {
 
     const upgradeCost = p.baseCost * Math.pow(2, level); 
     const workerHireCost = p.workerCost * (data.workers + 1); 
-    const maxDemand = (level * 20) + (data.workers * 5);
+    const hasAd = data.adExpiry > Date.now();
+    const adBoost = hasAd ? 1.4 : 1; // زيادة الطلب 40% لو فيه إعلان
+    const maxDemand = Math.floor(((level * 20) + (data.workers * 5)) * adBoost);
+    const recommendedPrice = Math.floor(p.baseCost * 0.005); // السعر الموصي به
     const profitPerUnit = Math.max(1, data.price - (p.baseCost * 0.001)); 
     const currentReturn = maxDemand * profitPerUnit;
+    const adCost = Math.floor(p.baseCost * 0.1);
 
     list.innerHTML += `
       <div class="project-card" style="border-left: 4px solid #fbbf24; margin-bottom:20px;">
         <div class="project-header">
           <span class="project-title">${p.name} (المستوى ${level})</span>
-          <span class="badge" style="background:#38bdf8; color:#000;">${level === 0 ? 'جديد' : 'نشط'}</span>
+          <span class="badge" style="background:${hasAd?'#10b981':'#38bdf8'}; color:#000;">${hasAd ? 'حملة نشطة' : 'نشط'}</span>
         </div>
         
         <div style="background:#0b1120; padding:10px; border-radius:8px; font-size:11px; margin-bottom:10px; line-height:1.8;">
@@ -735,7 +852,10 @@ function renderBusiness() {
         </div>
 
         <div style="margin-bottom:10px;">
-          <label style="font-size:11px; color:#94a3b8;">سعر بيع المنتج (الوحدة):</label>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
+            <label style="font-size:11px; color:#94a3b8;">سعر بيع المنتج (الوحدة):</label>
+            <span style="font-size:10px; color:#fbbf24; background:rgba(251,191,36,0.1); padding:2px 5px; border-radius:4px;">السعر الموصي به: $${recommendedPrice}</span>
+          </div>
           <div class="row" style="margin-top:5px; align-items:center;">
             <button class="red" onclick="updatePrice('${p.id}', -1)" style="padding:5px; flex:0.2;">-</button>
             <input type="number" id="price_${p.id}" value="${data.price}" onchange="updatePriceInput('${p.id}', this.value)" style="margin:0; flex:1; padding:5px; text-align:center;">
@@ -743,10 +863,14 @@ function renderBusiness() {
           </div>
         </div>
 
-        <div class="row">
+        <div class="row" style="margin-bottom:5px;">
           <button class="purple" onclick="hireWorker('${p.id}', ${workerHireCost})">توظيف ($${workerHireCost.toLocaleString()})</button>
           <button class="gold" onclick="buyProject('${p.id}', ${upgradeCost}, true)">ترقية ($${upgradeCost.toLocaleString()})</button>
         </div>
+
+        <button class="${hasAd ? 'green' : 'gold'} full" style="font-size:11px; padding:8px;" onclick="buyAdCampaign('${p.id}', ${adCost})" ${hasAd ? 'disabled' : ''}>
+          ${hasAd ? '✅ حملة إعلانية نشطة (+40% مبيعات)' : `📢 إطلاق حملة إعلانية ساعة كاملة (+40% مبيعات) - $${adCost}`}
+        </button>
       </div>
     `; 
   }); 
@@ -758,7 +882,7 @@ window.buyProject = async (id, cost, isUpgrade = false) => {
     await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}.level`]: increment(1) }); 
     showToast("تم ترقية المشروع!");
   } else {
-    await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}`]: { level: 1, workers: 0, price: 32 } }); 
+    await updateDoc(doc(db, "users", user.uid), { cash: increment(-cost), [`projects.${id}`]: { level: 1, workers: 0, price: 32, adExpiry: 0 } }); 
     showToast("تم افتتاح المشروع بنجاح!");
   }
 };
@@ -780,6 +904,15 @@ window.updatePriceInput = async (id, val) => {
   let newVal = parseInt(val);
   if(isNaN(newVal) || newVal < 1) newVal = 1;
   await updateDoc(doc(db, "users", user.uid), { [`projects.${id}.price`]: newVal });
+};
+
+window.buyAdCampaign = async (id, cost) => {
+  if(uData.cash < cost) return showToast("فلوسك مش كفاية!");
+  await updateDoc(doc(db, "users", user.uid), {
+    cash: increment(-cost),
+    [`projects.${id}.adExpiry`]: Date.now() + 3600000 // ساعة كاملة
+  });
+  showToast("تم إطلاق الحملة الإعلانية بنجاح!");
 };
 
 function renderRealEstate() { const list = document.getElementById('realestateList'); if(!list) return; list.innerHTML = ''; REAL_ESTATE.forEach(r => { const owned = uData.properties?.[r.id] || 0; list.innerHTML += `<div class="project-card"><div class="project-header"><span class="project-title">${r.name}</span><span class="stat-value green">+$${r.income}/h</span></div><div class="project-stats">التكلفة: $${r.cost.toLocaleString('en-US')} | تملك: ${owned}</div><button class="full green" onclick="buyProperty('${r.id}', ${r.cost})">شراء</button></div>`; }); }
@@ -855,6 +988,44 @@ window.launderMoney = async () => {
   await updateDoc(doc(db, "users", user.uid), { dirtyCash: increment(-amount), bank: increment(cleanAmount) }); showToast(`تم غسل وتحويل $${cleanAmount} للبنك.`);
 };
 window.redeemCode = async () => { const code = document.getElementById('codeInput').value.trim(); if(!code) return; showToast("كود غير صالح."); };
+
+function renderCorps() { 
+  const list = document.getElementById('corpsList'); if(!list) return; 
+  if(uData.corporations?.length > 0) { 
+    list.innerHTML = uData.corporations.map(c => `<div class="project-card"><strong>${c.name}</strong> (${c.type})<br>رأس المال: $${c.capital.toLocaleString()}<br>سعر السهم: $${c.price}</div>`).join(''); 
+  } else { list.innerHTML = ''; } 
+}
+window.createCorp = async () => { 
+  const name = document.getElementById('corpName').value.trim(); 
+  const type = document.getElementById('corpType').value;
+  const capital = parseInt(document.getElementById('corpCapital').value); 
+  
+  if(!name || !capital || capital < 100000) return showToast("أدخل اسم ورأس مال صحيح (100,000$+)"); 
+  if(uData.cash < capital) return showToast("تحتاج $" + capital.toLocaleString()); 
+  
+  const price = Math.floor(capital / 1000);
+  
+  await updateDoc(doc(db, "users", user.uid), { 
+    cash: increment(-capital), 
+    corporations: [...(uData.corporations || []), { name, type, capital, price }] 
+  }); 
+  showToast("تم تأسيس الشركة!"); 
+};
+
+function renderGangs() { 
+  const list = document.getElementById('gangsList'); if(!list) return; 
+  if(uData.gang) { 
+    list.innerHTML = `<div class="project-card"><strong>تحالفك: ${uData.gang.name}</strong><br>الشعار: ${uData.gang.slogan}</div>`; 
+  } else { list.innerHTML = ''; } 
+}
+window.createGang = async () => { 
+  const name = document.getElementById('gangName').value.trim(); 
+  const slogan = document.getElementById('gangSlogan').value.trim(); 
+  if(!name || !slogan) return showToast("أدخل اسم وشعار التحالف"); 
+  if(uData.cash < 50000) return showToast("تحتاج 50,000$"); 
+  await updateDoc(doc(db, "users", user.uid), { cash: increment(-50000), gang: { name, slogan } }); 
+  showToast("تم تأسيس التحالف!"); 
+};
 
 setInterval(() => { 
   if(uData) { 
